@@ -11,5 +11,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@types/koa": "^2.0.39",
+    "@types/lodash": "^4.14.77",
+    "@types/validator": "^6.3.0",
+    "koa": "^2.3.0",
+    "lodash": "^4.17.4",
+    "validator": "^9.0.0"
   }
 }
