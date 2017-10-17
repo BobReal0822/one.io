@@ -1,0 +1,15 @@
+{
+  "name": "gus-router",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/src/index.js",
+  "typings": "build/src/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+  }
+}
