@@ -1,7 +1,7 @@
 
 import { generateMessage } from './utils';
 
-export interface IErrorMessage {
+export interface ErrorMessageInfo {
     code: string;
     value: string;
 }

@@ -1,5 +1,5 @@
 
-import { IErrorMessage } from './../error';
+import { ErrorMessageInfo } from './../error';
 
 export function getRouteName(methodName: string): string {
     const reg = /[A-Z]?[a-z]+/g;
@@ -8,10 +8,9 @@ export function getRouteName(methodName: string): string {
     return matches && matches.reduce((prev, curr, index) => `${ index === 1 ? '/' : '' }${ prev.toLowerCase() }/${ curr.toLowerCase() }`) || '';
 }
 
-export function generateMessage(code: string, value: string): IErrorMessage {
+export function generateMessage(code: string, value: string): ErrorMessageInfo {
     return {
         code,
         value
     };
 }
-
