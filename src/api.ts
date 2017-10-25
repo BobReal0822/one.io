@@ -12,13 +12,21 @@ export interface ApiOptions<Permission> {
   permission?: Permission;
   tocken?: string;
   test?: boolean;
+  cookies?: {
+    userName: string;
+    tocken: string;
+  };
 }
 
-export const DefaultApiOptions: ApiOptions<Permission> = {
+export const DefaultApiOptions = {
   path: '',
   method: 'get',
   tocken: '',
-  test: false
+  test: false,
+  cookies: {
+    userName: 'userName',
+    tocken: 'tocken'
+  }
 };
 
 /**
@@ -40,24 +48,40 @@ export function api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
     const apiOptions = Object.assign({}, DefaultApiOptions, options, {
       path: getRouteName(propertyKey)
     });
+    const cookieKeys = Object.assign({}, DefaultApiOptions.cookies, options.cookies);
 
     console.log('Permission in api: ');
 
-    descriptor.value = (ctx: Context) => {
+    descriptor.value = async (ctx: Context) => {
       const { path, method } = ctx.request;
-      console.log('3 in Permission: ', (apiOptions.permission as Permission).getGroups());
+      const userName = ctx.cookies.get(cookieKeys.userName);
+      const tocken = ctx.cookies.get(cookieKeys.tocken);
 
-      if (!apiOptions.path) {
-        // error
-      } else if (path === apiOptions.path && method.toLowerCase() === (apiOptions.method || '').toLowerCase()) {
-        // run
+      console.log('userName & tocken in Api: ', userName, tocken);
+      // console.log('3 in Permission: ', apiOptions.permission.getGroups());
+      // console.log('')
 
+      if (!apiOptions.permission) {
         result.data = originalMethod(ctx);
+      } else if (!userName) {
+        result.success = false;
+        // result.message =
+      } else if (!tocken) {
+        //
+      } else {
+        const userPermission = await apiOptions.permission.getUserPermissionByName(userName);
+        const isValid = Permission.verify(userPermission, apiOptions.permission);
 
-        return result;
+        if (!isValid) {
+          //
+        } else if (!apiOptions.path) {
+          // error
+        } else if (path === apiOptions.path && method.toLowerCase() === (apiOptions.method || '').toLowerCase()) {
+          result.data = originalMethod(ctx);
+        }
       }
 
-      return ;
+      return result;
     };
   };
 }

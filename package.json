@@ -13,9 +13,11 @@
   "dependencies": {
     "@types/koa": "^2.0.39",
     "@types/lodash": "^4.14.77",
+    "@types/redis": "^2.6.1",
     "@types/validator": "^6.3.0",
     "koa": "^2.3.0",
     "lodash": "^4.17.4",
+    "redis": "^2.8.0",
     "validator": "^9.0.0"
   }
 }
