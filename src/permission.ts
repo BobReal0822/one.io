@@ -1,7 +1,8 @@
-import * as Redis from 'redis';
+import * as redis from 'redis';
+import { Promise as bluebird } from 'bluebird';
 import * as _ from 'lodash';
 
-const Client = Redis.createClient();
+const Client = redis.createClient();
 
 export abstract class Permission {
   private groups: Set<string>;
@@ -52,11 +53,13 @@ export class Tocken {
     return this.tocken;
   }
 
-  static verify(client: Tocken, server: Tocken): boolean {
-    const clientTocken = client.getTocken();
-    const serverTocken = server.getTocken();
+  static async verify(tocken: Tocken): Promise<boolean> {
+    const clientTocken = tocken.getTocken();
+    const serverTocken = await Tocken.getTockenByName(clientTocken.name);
 
-    return clientTocken.name === serverTocken.name && clientTocken.value === clientTocken.value;
+    console.log('clientTocken & serverTocken in verify: ', clientTocken, serverTocken);
+
+    return clientTocken.value === serverTocken;
   }
 
   public save() {
@@ -65,7 +68,13 @@ export class Tocken {
     Client.set(name, value);
   }
 
-  static getTockenByName(name: string) {
-    return Client.get(name);
+  static getTockenByName(name: string): Promise<string> {
+    return new Promise((resolve, reject) => Client.get(name, (err, value) => {
+      if (err) {
+        reject(err);
+      }
+
+      resolve(value);
+    }));
   }
 }

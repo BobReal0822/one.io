@@ -9,18 +9,24 @@ export interface ErrorMessageInfo {
 export const ErrorMessage = {
     unknown: generateMessage('-1', 'Unknown error!'),
     param: {
-        unknown: generateMessage('3000', 'Unknown parameters error!'),
-        missing: generateMessage('3001', 'Missing parameters!'),
-        formatError: generateMessage('3002', 'Parameters format error!')
+        unknown: generateMessage('3000', 'Unknown parameter error!'),
+        missing: generateMessage('3001', 'Missing parameter!'),
+        formatError: generateMessage('3002', 'Parameter format error!')
     },
-    user: {
-        unknown: generateMessage('4000', 'unknown'),
-        alreadyExist: generateMessage('4001', 'User already exist!'),
-        createSuccess: generateMessage('4002', 'User create success!'),
-        createFail: generateMessage('4003', 'User create fail!'),
-        loginSuccess: generateMessage('4004', 'User login success!'),
-        loginFail: generateMessage('4005', 'User login fail!'),
-        logoutSuccess: generateMessage('4006', 'User logout success!')
+    permission: {
+        unknown: generateMessage('4000', 'Unknown permission error!'),
+        missing: generateMessage('4001', 'Missing permission!'),
+        invalid: generateMessage('4002', 'Permission invalid!')
+    },
+    tocken: {
+        unknown: generateMessage('5000', 'Unknown tocken error!'),
+        missing: generateMessage('5001', 'Missing tocken!'),
+        invalid: generateMessage('5002', 'Tocken invalid!')
+    },
+    route: {
+        unknown: generateMessage('6000', 'Unknown route error!'),
+        missing: generateMessage('6001', 'Missing route!'),
+        invalid: generateMessage('6002', 'Route invalid!')
     }
 };
 

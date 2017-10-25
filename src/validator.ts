@@ -2,7 +2,7 @@
 import { Context } from 'koa';
 import * as _ from 'lodash';
 import * as Vali from 'validator';
-import { ContextData, DefaultResult, ResponseInfo, ResponseMethods } from './response';
+import { ContextData, DefaultResult, ResponseInfo, ResponseMethods } from './';
 
 import { ErrorMessage, ErrorMessageInfo } from './error';
 import { getRouteName } from './utils';
@@ -18,7 +18,7 @@ export interface ValidatorOptions {
  * @param {ValidatorOptions} [options={}]
  * @returns {MethodDecorator}
  */
-export function validator(options: ValidatorOptions = {}): MethodDecorator {
+export function Validator(options: ValidatorOptions = {}): MethodDecorator {
   console.log('1 in Validator: ');
 
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {

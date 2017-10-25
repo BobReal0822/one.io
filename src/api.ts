@@ -2,9 +2,9 @@
 import { Context } from 'koa';
 import * as _ from 'lodash';
 
-import { Permission } from './';
-import { DefaultResult, ResponseInfo, ResponseMethods } from './response';
-import { getRouteName } from './utils';
+import { ErrorMessage, ErrorMessageInfo, DefaultResult, ResponseInfo, ResponseMethods } from './';
+import { Permission, Tocken } from './permission';
+import { getRouteName, formantErrorMessage } from './utils';
 
 export interface ApiOptions<Permission> {
   path?: string;
@@ -36,7 +36,7 @@ export const DefaultApiOptions = {
  * @param {IPermisson} options
  * @returns {MethodDecorator}
  */
-export function api<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
+export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
   const reg = /[A-Z]?[a-z]+/g;
 
   console.log('1 in permission.');
@@ -54,34 +54,48 @@ export function api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
 
     descriptor.value = async (ctx: Context) => {
       const { path, method } = ctx.request;
-      const userName = ctx.cookies.get(cookieKeys.userName);
-      const tocken = ctx.cookies.get(cookieKeys.tocken);
 
-      console.log('userName & tocken in Api: ', userName, tocken);
-      // console.log('3 in Permission: ', apiOptions.permission.getGroups());
+      console.log('3 in Permission: ', apiOptions.permission);
       // console.log('')
 
       if (!apiOptions.permission) {
-        result.data = originalMethod(ctx);
-      } else if (!userName) {
-        result.success = false;
-        // result.message =
-      } else if (!tocken) {
-        //
+        console.log('pass1: ', apiOptions.path);
+        // result.data = originalMethod(ctx);
       } else {
-        const userPermission = await apiOptions.permission.getUserPermissionByName(userName);
-        const isValid = Permission.verify(userPermission, apiOptions.permission);
+        const userName = ctx.cookies.get(cookieKeys.userName);
+        const tocken = ctx.cookies.get(cookieKeys.tocken);
+        console.log('userName & tocken in Api: ', userName, tocken);
 
-        if (!isValid) {
-          //
-        } else if (!apiOptions.path) {
-          // error
-        } else if (path === apiOptions.path && method.toLowerCase() === (apiOptions.method || '').toLowerCase()) {
-          result.data = originalMethod(ctx);
+        if (!userName) {
+          result.success = false;
+          result.message = formantErrorMessage(ErrorMessage.permission.invalid);
+        } else if (!tocken) {
+          result.success = false;
+          result.message = formantErrorMessage(ErrorMessage.tocken.missing);
+        } else {
+          const userPermission = await apiOptions.permission.getUserPermissionByName(userName);
+          const isPermissionValid = Permission.verify(userPermission, apiOptions.permission);
+          const isTockenValid = Tocken.verify(new Tocken(userName, tocken));
+
+          if (!isTockenValid) {
+            result.success = false;
+            result.message = formantErrorMessage(ErrorMessage.tocken.invalid);
+          } else if (!isPermissionValid) {
+            result.success = false;
+            result.message = formantErrorMessage(ErrorMessage.permission.invalid);
+          } else if (!apiOptions.path) {
+            result.success = false;
+            result.message = formantErrorMessage(ErrorMessage.route.missing);
+          } else if (path === apiOptions.path && method.toLowerCase() === (apiOptions.method || '').toLowerCase()) {
+            console.log('pass2: ', apiOptions.path);
+            // result.data = originalMethod(ctx);
+          }
         }
       }
 
-      return result;
+      ctx.body = result;
+
+      return originalMethod(ctx);
     };
   };
 }
