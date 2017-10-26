@@ -37,30 +37,52 @@ export const DefaultApiOptions = {
  * @returns {MethodDecorator}
  */
 export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
-  const reg = /[A-Z]?[a-z]+/g;
+  const dynamicApiReg = /\:[a-zA-Z]+/;
 
   console.log('1 in permission.');
 
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     console.log('2 in permission.');
     const originalMethod = descriptor.value;
-    const result: ResponseInfo = _.cloneDeep(DefaultResult);
-    const apiOptions = Object.assign({}, DefaultApiOptions, options, {
+    const apiOptions = Object.assign({}, DefaultApiOptions, {
       path: getRouteName(propertyKey)
-    });
+    }, options);
+
+    apiOptions.permission = options.permission;
     const cookieKeys = Object.assign({}, DefaultApiOptions.cookies, options.cookies);
 
     console.log('Permission in api: ');
 
-    descriptor.value = async (ctx: Context) => {
+    descriptor.value = async (ctx: Context, next: any) => {
       const { path, method } = ctx.request;
+      let result: ResponseInfo = _.cloneDeep(DefaultResult);
 
+      await next();
+      console.log('load api: ', apiOptions.path, path);
       console.log('3 in Permission: ', apiOptions.permission);
-      // console.log('')
+      console.log('typeof next: ', typeof next, next);
 
-      if (!apiOptions.permission) {
-        console.log('pass1: ', apiOptions.path);
-        // result.data = originalMethod(ctx);
+      if (path !== apiOptions.path || method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
+        return;
+      } else if (!apiOptions.permission) {
+        let res = {
+          data: 'haha'
+        };
+
+        try {
+          res = await originalMethod(ctx, next);
+          // result = Object.assign({}, result, res);
+          ctx.body = Object.assign({}, result, res);
+          // ctx.body = {};
+
+          console.log('pass 1 & ctx.body: ', apiOptions.path, ctx.body);
+
+          return res;
+        } catch (err) {
+          console.log('err in pass: ', err);
+        }
+
+        return res;
       } else {
         const userName = ctx.cookies.get(cookieKeys.userName);
         const tocken = ctx.cookies.get(cookieKeys.tocken);
@@ -83,19 +105,20 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           } else if (!isPermissionValid) {
             result.success = false;
             result.message = formantErrorMessage(ErrorMessage.permission.invalid);
-          } else if (!apiOptions.path) {
-            result.success = false;
-            result.message = formantErrorMessage(ErrorMessage.route.missing);
-          } else if (path === apiOptions.path && method.toLowerCase() === (apiOptions.method || '').toLowerCase()) {
-            console.log('pass2: ', apiOptions.path);
-            // result.data = originalMethod(ctx);
+          }else {
+            console.log('pass 2');
+            result = Object.assign({}, result, originalMethod(ctx));
+            ctx.body = result;
+
+            return;
           }
         }
       }
 
+      console.log('resupt in api: ', result);
       ctx.body = result;
 
-      return originalMethod(ctx);
+      return;
     };
   };
 }

@@ -55,7 +55,9 @@ export class Tocken {
 
   static async verify(tocken: Tocken): Promise<boolean> {
     const clientTocken = tocken.getTocken();
-    const serverTocken = await Tocken.getTockenByName(clientTocken.name);
+    const serverTocken = await Tocken.getTockenByName(clientTocken.name).catch(err => {
+      console.log('error in Tocken.verify: ', err);
+    });
 
     console.log('clientTocken & serverTocken in verify: ', clientTocken, serverTocken);
 
@@ -69,8 +71,11 @@ export class Tocken {
   }
 
   static getTockenByName(name: string): Promise<string> {
+    console.log('name in getTockenByName: ', name);
+
     return new Promise((resolve, reject) => Client.get(name, (err, value) => {
       if (err) {
+        console.log('error in getTockenByName: ', name, err);
         reject(err);
       }
 

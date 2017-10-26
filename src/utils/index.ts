@@ -7,7 +7,7 @@ export function getRouteName(methodName: string): string {
     const reg = /[A-Z]?[a-z]+/g;
     const matches = typeof methodName === 'string' && methodName.match(reg);
 
-    return matches && matches.reduce((prev, curr, index) => `${ index === 1 ? '/' : '' }${ prev.toLowerCase() }/${ curr.toLowerCase() }`) || '';
+    return `/${matches && matches.reduce((prev, curr, index) => `${ prev.toLowerCase() }/${ curr.toLowerCase() }`) || ''}`;
 }
 
 export function generateMessage(code: string, value: string): ErrorMessageInfo {
@@ -24,7 +24,7 @@ export function formantErrorMessage(message: ErrorMessageInfo): string {
 export function getFiles(path: string, reg: RegExp): string[] {
     const files: string[] = [];
 
-    if (Fs.statSync(path).isDirectory()) {
+    if (path && reg && Fs.statSync(path).isDirectory()) {
         Fs.readdirSync(path).map(file => {
             const filePath = Path.resolve(path, file);
             if (Fs.statSync(filePath).isFile() && reg.test(file)) {
@@ -38,7 +38,11 @@ export function getFiles(path: string, reg: RegExp): string[] {
     return files;
 }
 
-export function getMethods(target: any) {
+export function getMethods(target: any): string[] {
+    if (!target) {
+        return [];
+    }
+
     return Object.getOwnPropertyNames(target).sort().filter((e, i, arr) => {
         if (e !== arr[i + 1] && typeof target[e] === 'function') {
             return true;

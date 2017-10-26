@@ -23,11 +23,11 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
 
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    const result: ResponseInfo = _.cloneDeep(DefaultResult);
 
     console.log('2 in Validator: ', descriptor.value);
 
-    descriptor.value = (ctx: (Context)) => {
+    descriptor.value = (ctx: Context, next: any) => {
+      const result: ResponseInfo = _.cloneDeep(DefaultResult);
       const { path } = ctx.request;
 
       console.log('in in in \n\n\n');
@@ -64,13 +64,14 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
         };
       });
 
-      console.log('validateResult : ', validateResult);
-
-      result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: [${ item.message.code }], ${ item.message.value }`).join('\n');
+      result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: [${ item.message.code }], ${ item.message.value }`).filter(item => !!item).join('    ');
       result.success = !result.message;
       ctx.body = result;
 
-      return originalMethod(ctx);
+      // originalMethod(ctx);
+      console.log('result in validator : ', result);
+
+      return result.success ? originalMethod(ctx) : result;
     };
   };
 }
