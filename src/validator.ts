@@ -5,7 +5,7 @@ import * as Vali from 'validator';
 import { ContextData, DefaultResult, ResponseInfo, ResponseMethods } from './';
 
 import { ErrorMessage, ErrorMessageInfo } from './error';
-import { getRouteName } from './utils';
+import { getRouteName, getContextData } from './utils';
 
 export interface ValidatorOptions {
   [key: string]: RegExp | ((value: any) => boolean);
@@ -24,7 +24,7 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
-    console.log('2 in Validator: ', descriptor.value);
+    console.log('2 in Validator: ');
 
     descriptor.value = (ctx: Context, next: any) => {
       const result: ResponseInfo = _.cloneDeep(DefaultResult);
@@ -38,7 +38,9 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
         return;
       }
 
-      const data = ctx.query;
+      const data = getContextData(ctx);
+
+      console.log('data in validator: ', data, (ctx as any).params);
       const validateResult = Object.keys(options).map(key => {
         const validator = options[key];
         const value = data[key];
@@ -48,7 +50,7 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
         if (typeof value !== 'boolean' && !value) {
           message = ErrorMessage.param.missing;
         } else if (validator instanceof RegExp) {
-          isValid = validator.test(value);
+          isValid = validator.test(String(value));
           message = ErrorMessage.param.formatError;
         } else if (typeof validator === 'function') {
           isValid = validator(value);

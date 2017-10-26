@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 
 import { ErrorMessage, ErrorMessageInfo, DefaultResult, ResponseInfo, ResponseMethods } from './';
 import { Permission, Tocken } from './permission';
-import { getRouteName, formantErrorMessage } from './utils';
+import { getRouteName, formantErrorMessage, filtePath, getParams } from './utils';
 
 export interface ApiOptions<Permission> {
   path?: string;
@@ -44,38 +44,36 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     console.log('2 in permission.');
     const originalMethod = descriptor.value;
-    const apiOptions = Object.assign({}, DefaultApiOptions, {
-      path: getRouteName(propertyKey)
-    }, options);
 
-    apiOptions.permission = options.permission;
     const cookieKeys = Object.assign({}, DefaultApiOptions.cookies, options.cookies);
 
     console.log('Permission in api: ');
 
     descriptor.value = async (ctx: Context, next: any) => {
+      await next();
       const { path, method } = ctx.request;
+      const apiOptions = Object.assign({}, DefaultApiOptions, options);
       let result: ResponseInfo = _.cloneDeep(DefaultResult);
 
-      await next();
-      console.log('load api: ', apiOptions.path, path);
-      console.log('3 in Permission: ', apiOptions.permission);
-      console.log('typeof next: ', typeof next, next);
+      apiOptions.permission = options.permission;
+      apiOptions.path = options.path ? filtePath(options.path) : getRouteName(propertyKey);
+      const params = getParams(apiOptions.path, path);
 
-      if (path !== apiOptions.path || method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
+      console.log('3 in Permission path: ', path, apiOptions.path);
+      console.log('4 in Permission: ', apiOptions.permission);
+      console.log('params in api: ', params);
+
+      if (!params.isValid || method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
         return;
       } else if (!apiOptions.permission) {
-        let res = {
-          data: 'haha'
-        };
+        let res = {};
 
         try {
+          (ctx as any).params = params.data;
           res = await originalMethod(ctx, next);
-          // result = Object.assign({}, result, res);
           ctx.body = Object.assign({}, result, res);
-          // ctx.body = {};
 
-          console.log('pass 1 & ctx.body: ', apiOptions.path, ctx.body);
+          console.log('pass 1 & ctx.body: ', apiOptions.path, (ctx as any).params);
 
           return res;
         } catch (err) {
@@ -105,7 +103,7 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           } else if (!isPermissionValid) {
             result.success = false;
             result.message = formantErrorMessage(ErrorMessage.permission.invalid);
-          }else {
+          } else {
             console.log('pass 2');
             result = Object.assign({}, result, originalMethod(ctx));
             ctx.body = result;
@@ -115,7 +113,6 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
         }
       }
 
-      console.log('resupt in api: ', result);
       ctx.body = result;
 
       return;

@@ -74,11 +74,12 @@ export class Router {
                 const methods = apiClass && getMethods(apiClass);
 
                 return methods && methods.length && methods.map(method => {
-                    const func: any = apiClass[method] && apiClass[method];
+                    const func: Middleware = apiClass[method] && apiClass[method];
                     // ctx.app.use(func);
-                    console.log(' call func now');
+                    console.log(' call func now: ');
 
                     try {
+                        // TODO: is middleware or not?
                         app.use(func);
                     } catch (err) {
                         console.log('err in func call: ', err);
