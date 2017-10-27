@@ -62,11 +62,11 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
       console.log('3 in Permission path: ', path, apiOptions.path);
       console.log('4 in Permission: ', apiOptions.permission);
       console.log('params in api: ', params);
+      let res = {};
 
       if (!params.isValid || method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
         return;
       } else if (!apiOptions.permission) {
-        let res = {};
 
         try {
           (ctx as any).params = params.data;
@@ -95,16 +95,19 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           const isPermissionValid = Permission.verify(userPermission, apiOptions.permission);
           const isTockenValid = await Tocken.verify(new Tocken(userName, tocken));
 
-          console.log('isTockenValid: ', isTockenValid, tocken);
+          console.log('permission verify in Api: ', isPermissionValid, userPermission, apiOptions.permission);
           if (!isTockenValid) {
             result = formantErrorMessage(ErrorMessage.tocken.invalid);
           } else if (!isPermissionValid) {
             result = formantErrorMessage(ErrorMessage.permission.invalid);
           } else {
-            result = Object.assign({}, result, originalMethod(ctx));
-            ctx.body = result;
+            (ctx as any).params = params.data;
+            res = await originalMethod(ctx, next);
+            ctx.body = Object.assign({}, result, res);
 
-            return;
+            // console.log('pass 1 & ctx.body: ', apiOptions.path, (ctx as any).params);
+
+            return res;
           }
         }
       }
