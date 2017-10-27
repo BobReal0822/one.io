@@ -3,7 +3,7 @@ import * as Path from 'path';
 import { Context } from 'koa';
 import { isNumeric } from 'validator';
 
-import { ErrorMessageInfo, ResponseMethods } from './..';
+import { ErrorMessageInfo, ResponseMethods, ResponseInfo } from './..';
 
 export interface GetParamsReturns {
   isValid: boolean;
@@ -26,8 +26,13 @@ export function generateMessage(code: string, value: string): ErrorMessageInfo {
   };
 }
 
-export function formantErrorMessage(message: ErrorMessageInfo): string {
-  return `${ message.code }: ${ message.value }`;
+export function formantErrorMessage(message: ErrorMessageInfo, success?: boolean, data?: any): ResponseInfo {
+  return Object.assign({}, {
+    success: !!success,
+    code: message.code,
+    message: message.value,
+    data: data || {}
+  });
 }
 
 export function getFiles(path: string, reg: RegExp): string[] {

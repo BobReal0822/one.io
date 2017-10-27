@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 
 import { ErrorMessage, ErrorMessageInfo, DefaultResult, ResponseInfo, ResponseMethods } from './';
 import { Permission, Tocken } from './permission';
-import { getRouteName, formantErrorMessage, filtePath, getParams } from './utils';
+import { getRouteName, filtePath, getParams, formantErrorMessage } from './utils';
 
 export interface ApiOptions<Permission> {
   path?: string;
@@ -87,24 +87,20 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
         console.log('userName & tocken in Api: ', userName, tocken);
 
         if (!userName) {
-          result.success = false;
-          result.message = formantErrorMessage(ErrorMessage.permission.invalid);
+          result = formantErrorMessage(ErrorMessage.permission.invalid);
         } else if (!tocken) {
-          result.success = false;
-          result.message = formantErrorMessage(ErrorMessage.tocken.missing);
+          result = formantErrorMessage(ErrorMessage.tocken.missing);
         } else {
           const userPermission = await apiOptions.permission.getUserPermissionByName(userName);
           const isPermissionValid = Permission.verify(userPermission, apiOptions.permission);
-          const isTockenValid = Tocken.verify(new Tocken(userName, tocken));
+          const isTockenValid = await Tocken.verify(new Tocken(userName, tocken));
 
+          console.log('isTockenValid: ', isTockenValid, tocken);
           if (!isTockenValid) {
-            result.success = false;
-            result.message = formantErrorMessage(ErrorMessage.tocken.invalid);
+            result = formantErrorMessage(ErrorMessage.tocken.invalid);
           } else if (!isPermissionValid) {
-            result.success = false;
-            result.message = formantErrorMessage(ErrorMessage.permission.invalid);
+            result = formantErrorMessage(ErrorMessage.permission.invalid);
           } else {
-            console.log('pass 2');
             result = Object.assign({}, result, originalMethod(ctx));
             ctx.body = result;
 

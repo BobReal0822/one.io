@@ -3,4 +3,4 @@ export * from './api';
 export * from './router';
 export * from './validator';
 export * from './error';
-export { Permission } from './permission';
+export * from './permission';

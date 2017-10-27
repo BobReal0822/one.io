@@ -1,4 +1,5 @@
 import * as redis from 'redis';
+import * as Bcrypt from 'bcryptjs';
 import { Promise as bluebird } from 'bluebird';
 import * as _ from 'lodash';
 
@@ -38,19 +39,26 @@ export interface TockenInfo {
 export class Tocken {
   private tocken: TockenInfo;
 
-  constructor(name: string, tocken: string) {
-    if (!name || !tocken) {
+  constructor(name: string, tocken?: string) {
+    if (!name) {
+      // thow error
       return;
     }
 
     this.tocken = {
       name,
-      value: tocken
+      value: tocken || Tocken.generateTocken(name)
     };
+
+    return this;
   }
 
   public getTocken(): TockenInfo {
     return this.tocken;
+  }
+
+  static generateTocken<Permission>(name: string): string {
+    return Bcrypt.hashSync(`${ name }${ new Date().getTime() }`);
   }
 
   static async verify(tocken: Tocken): Promise<boolean> {
@@ -64,10 +72,12 @@ export class Tocken {
     return clientTocken.value === serverTocken;
   }
 
-  public save() {
+  public save(): string {
     const { name, value } = this.tocken;
 
     Client.set(name, value);
+
+    return value;
   }
 
   static getTockenByName(name: string): Promise<string> {
@@ -82,4 +92,19 @@ export class Tocken {
       resolve(value);
     }));
   }
+
+  // static async getAll(): Promise<any> {
+  //   return new Promise((resolve, reject) => Client.keys('*', (err, keys) => {
+  //     if (err) {
+  //       reject(err);
+  //     }
+
+  //     const data: TockenInfo[] = keys.map(key => {
+  //       name: key,
+  //       value:
+  //     });
+
+  //     resolve(data);
+  //   }));
+  // }
 }

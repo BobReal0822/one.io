@@ -66,11 +66,11 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
         };
       });
 
-      result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: [${ item.message.code }], ${ item.message.value }`).filter(item => !!item).join('    ');
+      result.code = validateResult[0] && validateResult[0].message && validateResult[0].message.code || result.code;
+      result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: ${ item.message.value }`).filter(item => !!item).join('    ');
       result.success = !result.message;
       ctx.body = result;
 
-      // originalMethod(ctx);
       console.log('result in validator : ', result);
 
       return result.success ? originalMethod(ctx) : result;

@@ -10,7 +10,7 @@ export type ResponseMethods = 'get' | 'post' | 'put' | 'head' | 'delete';
 export interface ResponseInfo {
     success?: boolean;
     message?: string;
-    code?: number;
+    code?: string | number;
     data: {} | any[];
 }
 
@@ -23,7 +23,7 @@ export interface ContextData {
 export const DefaultResult: ResponseInfo = {
     success: true,
     message: '',
-    code: 0,
+    code: '0',
     data: {}
 };
 
