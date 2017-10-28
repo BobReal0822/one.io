@@ -25,5 +25,11 @@
     "lodash": "^4.17.4",
     "redis": "^2.8.0",
     "validator": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.0.4",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1"
   }
 }
