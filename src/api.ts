@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as Debug from 'debug';
 import * as Chalk from 'chalk';
 
-import { ErrorMessage, ErrorMessageInfo, DefaultResult, ResponseInfo, ResponseMethods } from './';
+import { ErrorMessage, ErrorMessageInfo, DefaultResult, ResponseInfo, ResponseMethods, getBody } from './';
 import { Permission, Tocken } from './permission';
 import { getRouteName, filtePath, getParams, formantErrorMessage } from './utils';
 
@@ -55,30 +55,34 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
     descriptor.value = async (ctx: Context, next: any) => {
       await next();
       const { path, method } = ctx.request;
-      let result: ResponseInfo = _.cloneDeep(DefaultResult);
-      let res = {};
 
-      const params = getParams(apiOptions.path, path);
-
-      if (!params.isValid || method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
+      if (method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
         return;
-      } else if (!apiOptions.permission) {
-
-        try {
-          (ctx as any).params = params.data;
-          res = await originalMethod(ctx, next);
-          ctx.body = Object.assign({}, result, res);
-          log(Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`));
-
-          return res;
-        } catch (err) {
-          throw new Error(`Api error: ${ err }`);
-        }
       } else {
         const userName = ctx.cookies.get(cookieKeys.userName);
         const tocken = ctx.cookies.get(cookieKeys.tocken);
+        const params = getParams(apiOptions.path, path);
+        let result: ResponseInfo = _.cloneDeep(DefaultResult);
+        let res = {};
 
-        if (!userName) {
+        if (!params.isValid ) {
+          return;
+        } else if (!apiOptions.permission) {
+          try {
+            const data = await getBody(ctx);
+            console.log('data in api: ', data);
+
+            (ctx as any).params = params.data;
+            (ctx.req as any).data = data;
+            res = await originalMethod(ctx, next);
+            ctx.body = Object.assign({}, result, res);
+            log(Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`));
+
+            return res;
+          } catch (err) {
+            throw new Error(`Api error: ${ err }`);
+          }
+        } else if (!userName) {
           result = formantErrorMessage(ErrorMessage.permission.invalid);
         } else if (!tocken) {
           result = formantErrorMessage(ErrorMessage.tocken.missing);
@@ -92,7 +96,10 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           } else if (!isPermissionValid) {
             result = formantErrorMessage(ErrorMessage.permission.invalid);
           } else {
+            const data = await getBody(ctx);
+
             (ctx as any).params = params.data;
+            (ctx.req as any).data = data;
             res = await originalMethod(ctx, next);
             ctx.body = Object.assign({}, result, res);
             log(`${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`)} \t permission: ${ isPermissionValid } \t tocken: ${ isTockenValid }`);
@@ -100,10 +107,10 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
             return res;
           }
         }
-      }
 
-      ctx.body = result;
-      log(`${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`)} ${ result.message }`);
+        ctx.body = result;
+        log(`${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`)} ${ result.message }`);
+      }
 
       return;
     };

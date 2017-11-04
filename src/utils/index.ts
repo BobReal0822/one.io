@@ -114,14 +114,3 @@ export function getParams(path: string, url: string): GetParamsReturns {
   };
 }
 
-// TODO: post && others
-export function getContextData(ctx: Context) {
-  let data: {
-    [key: string]: string | number;
-  } = {};
-
-  const { params, query } = (ctx as any);
-  data = Object.assign({}, (params || {}), query);
-
-  return data;
-}

@@ -5,9 +5,9 @@ import * as Vali from 'validator';
 import * as Debug from 'debug';
 import * as Chalk from 'chalk';
 
-import { ContextData, DefaultResult, ResponseInfo, ResponseMethods } from './';
+import { ContextData, DefaultResult, ResponseInfo, ResponseMethods, getBody } from './';
 import { ErrorMessage, ErrorMessageInfo } from './error';
-import { getRouteName, getContextData } from './utils';
+import { getRouteName } from './utils';
 
 export interface ValidatorOptions {
   [key: string]: RegExp | ((value: any) => boolean);
@@ -26,7 +26,7 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
-    descriptor.value = (ctx: Context, next: any) => {
+    descriptor.value = async (ctx: Context, next: any) => {
       const result: ResponseInfo = _.cloneDeep(DefaultResult);
       const { path } = ctx.request;
 
@@ -34,8 +34,9 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
         return;
       }
 
-      const data = getContextData(ctx);
+      const data = (ctx.req as any).data || {};
 
+      console.log('ctx.req.body in validator: ', data, data.name, typeof data);
       const validateResult = Object.keys(options).map(key => {
         const validator = options[key];
         const value = data[key];
