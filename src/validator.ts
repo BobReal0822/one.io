@@ -65,7 +65,6 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
       result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: ${ item.message.value }`).filter(item => !!item).join('    ');
       result.success = !result.message;
       ctx.body = result;
-
       log(`${ result.success ? Chalk.default.cyan('valid') : Chalk.default.red('invalid') } \t ${ Chalk.default.gray(result.message) }`);
 
       return result.success ? originalMethod(ctx) : result;

@@ -1,15 +1,15 @@
-import * as Path from 'path';
-import * as Mocha from 'mocha';
-import * as Chai from 'chai';
+// import * as Path from 'path';
+// import * as Mocha from 'mocha';
+// import * as Chai from 'chai';
 
-const { assert, expect } = Chai;
-const should = Chai.should();
+// const { assert, expect } = Chai;
+// const should = Chai.should();
 
-describe('Utils', () => {
+// describe('Api', () => {
 
-  describe('getRouteName', () => {
-    it('should return equals', () => {
-      //
-    });
-  });
-});
+//   describe('getRouteName', () => {
+//     it('should return equals', () => {
+//       //
+//     });
+//   });
+// });

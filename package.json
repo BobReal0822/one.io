@@ -6,7 +6,7 @@
   "typings": "build/src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "mocha",
+    "test": "mocha ./build/test",
     "tsc": "tsc -w"
   },
   "author": "",

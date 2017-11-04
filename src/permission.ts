@@ -5,6 +5,13 @@ import * as _ from 'lodash';
 
 const Client = redis.createClient();
 
+/**
+ * Verify user permission.
+ *
+ * @export
+ * @abstract
+ * @class Permission
+ */
 export abstract class Permission {
   private groups: Set<string>;
 
@@ -40,13 +47,18 @@ export interface TockenInfo {
   value: string;
 }
 
+/**
+ * Verify request tocken.
+ *
+ * @export
+ * @class Tocken
+ */
 export class Tocken {
   private tocken: TockenInfo;
 
   constructor(name: string, tocken?: string) {
     if (!name) {
-      // thow error
-      return;
+      throw new Error(`name is invalid.`);
     }
 
     this.tocken = {
@@ -68,7 +80,7 @@ export class Tocken {
   static async verify(tocken: Tocken): Promise<boolean> {
     const clientTocken = tocken.getTocken();
     const serverTocken = await Tocken.getTockenByName(clientTocken.name).catch(err => {
-      console.log('error in Tocken.verify: ', err);
+      throw new Error(`error in Tocken.verify: ${ err }`);
     });
 
     return clientTocken.value === serverTocken;

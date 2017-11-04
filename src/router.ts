@@ -37,6 +37,12 @@ const DefaultRouterOptions: RouterOptions = {
   routePath: './route'
 };
 
+/**
+ * load routes
+ *
+ * @export
+ * @class Router
+ */
 export class Router {
   private next: NextInfo;
   private options: RouterOptions;
