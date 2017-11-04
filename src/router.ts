@@ -8,88 +8,84 @@ import { getFiles, getMethods } from './utils';
 export type ResponseMethods = 'get' | 'post' | 'put' | 'head' | 'delete';
 
 export interface ResponseInfo {
-    success?: boolean;
-    message?: string;
-    code?: string | number;
-    data: {} | any[];
+  success?: boolean;
+  message?: string;
+  code?: string | number;
+  data: {} | any[];
 }
 
 export interface ContextData {
-    data: {
-        [key: string]: any;
-    };
+  data: {
+    [key: string]: any;
+  };
 }
 
 export const DefaultResult: ResponseInfo = {
-    success: true,
-    message: '',
-    code: '0',
-    data: {}
+  success: true,
+  message: '',
+  code: '0',
+  data: {}
 };
 
 export interface RouterOptions {
-    routePath: string;
+  routePath: string;
 }
 
 export type NextInfo = () => Promise<any>;
 
 const DefaultRouterOptions: RouterOptions = {
-    routePath: './route'
+  routePath: './route'
 };
 
 export class Router {
-    private next: NextInfo;
-    private options: RouterOptions;
+  private next: NextInfo;
+  private options: RouterOptions;
 
-    constructor(options: RouterOptions = DefaultRouterOptions) {
-        this.options = Object.assign({}, options);
-    }
+  constructor(options: RouterOptions = DefaultRouterOptions) {
+    this.options = Object.assign({}, options);
+  }
 
-    public routes(app: Koa): any {
-        // return (ctx: Context, next: () => Promise<any>) => {
-            try {
-                console.log(' call loadRoutes now');
+  public routes(app: Koa): any {
+      try {
+        return this.loadRoutes(app);
+      } catch (err) {
+        throw new Error(`in routes: ${ err }`);
+      }
+  }
 
-                return this.loadRoutes(app);
-            } catch (err) {
-                console.log('err in routes: ', err);
+  private loadRoutes(app: Koa) {
+    const fileReg = /\.js$/;
+    const routePath = Path.resolve(process.cwd(), this.options.routePath);
+    const files = getFiles(routePath, fileReg);
+    const funcs: Middleware[] = [];
 
-                return;
+    try {
+      files.map(file => {
+        // tslint:disable-next-line
+        const apiModule = require(file);
+        const apiClass = apiModule && apiModule.default;
+        const methods = apiClass && getMethods(apiClass);
+
+        return methods && methods.length && methods.map(method => {
+          const func: Middleware = apiClass[method] && apiClass[method];
+
+          try {
+            if (typeof func === 'function') {
+              funcs.push(func);
             }
+          } catch (err) {
+            throw new Error(`in loadRoutes: ${ err }`);
+          }
 
-        // };
+          return;
+        });
+      });
+
+      funcs.map(func => {
+        app.use(func);
+      });
+    } catch (err) {
+      throw new Error(`in loadRoutes: ${ err }`);
     }
-
-    private loadRoutes(app: Koa) {
-        const fileReg = /\.js$/;
-        const routePath = Path.resolve(process.cwd(), this.options.routePath);
-        const files = getFiles(routePath, fileReg);
-        console.log('route path in loadRoutes: ', routePath, files);
-
-        try {
-            return files.map(file => {
-                // tslint:disable-next-line
-                const apiModule = require(file);
-                const apiClass = apiModule && apiModule.default;
-                const methods = apiClass && getMethods(apiClass);
-
-                return methods && methods.length && methods.map(method => {
-                    const func: Middleware = apiClass[method] && apiClass[method];
-
-                    try {
-                        // TODO: is middleware or not?
-                        app.use(func);
-                    } catch (err) {
-                        console.log('err in func call: ', err);
-                    }
-
-                    return;
-                });
-            });
-        } catch (err) {
-            console.log('err in loadRoutes: ', err);
-        }
-
-        return;
-    }
+  }
 }

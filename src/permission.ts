@@ -18,6 +18,10 @@ export abstract class Permission {
     return this.groups;
   }
 
+  public getValues(): string[] {
+    return Array.from(this.getGroups());
+  }
+
   static verify(permission: Permission, required: Permission): boolean {
     let isRequired = true;
 

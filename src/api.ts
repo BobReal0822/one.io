@@ -1,6 +1,8 @@
 
 import { Context } from 'koa';
 import * as _ from 'lodash';
+import * as Debug from 'debug';
+import * as Chalk from 'chalk';
 
 import { ErrorMessage, ErrorMessageInfo, DefaultResult, ResponseInfo, ResponseMethods } from './';
 import { Permission, Tocken } from './permission';
@@ -29,6 +31,8 @@ export const DefaultApiOptions = {
   }
 };
 
+const log = Debug('api');
+
 /**
  * permission decorator
  *
@@ -42,17 +46,19 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     const cookieKeys = Object.assign({}, DefaultApiOptions.cookies, options.cookies);
+    const apiOptions = Object.assign({}, DefaultApiOptions, options);
+
+    apiOptions.permission = options.permission;
+    apiOptions.path = options.path ? filtePath(options.path) : getRouteName(propertyKey);
+    log(`load  ${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`) } \t ${ Chalk.default.gray(String(apiOptions.permission && apiOptions.permission.getValues() || '')) }`);
 
     descriptor.value = async (ctx: Context, next: any) => {
       await next();
       const { path, method } = ctx.request;
-      const apiOptions = Object.assign({}, DefaultApiOptions, options);
-      const params = getParams(apiOptions.path, path);
       let result: ResponseInfo = _.cloneDeep(DefaultResult);
       let res = {};
 
-      apiOptions.permission = options.permission;
-      apiOptions.path = options.path ? filtePath(options.path) : getRouteName(propertyKey);
+      const params = getParams(apiOptions.path, path);
 
       if (!params.isValid || method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
         return;
@@ -62,14 +68,12 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           (ctx as any).params = params.data;
           res = await originalMethod(ctx, next);
           ctx.body = Object.assign({}, result, res);
+          log(Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`));
 
           return res;
         } catch (err) {
-          // TODO
-          console.log('err in pass: ', err);
+          throw new Error(`Api error: ${ err }`);
         }
-
-        return res;
       } else {
         const userName = ctx.cookies.get(cookieKeys.userName);
         const tocken = ctx.cookies.get(cookieKeys.tocken);
@@ -91,6 +95,7 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
             (ctx as any).params = params.data;
             res = await originalMethod(ctx, next);
             ctx.body = Object.assign({}, result, res);
+            log(`${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`)} \t permission: ${ isPermissionValid } \t tocken: ${ isTockenValid }`);
 
             return res;
           }
@@ -98,6 +103,7 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
       }
 
       ctx.body = result;
+      log(`${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`)} ${ result.message }`);
 
       return;
     };

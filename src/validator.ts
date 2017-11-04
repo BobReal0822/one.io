@@ -2,14 +2,18 @@
 import { Context } from 'koa';
 import * as _ from 'lodash';
 import * as Vali from 'validator';
-import { ContextData, DefaultResult, ResponseInfo, ResponseMethods } from './';
+import * as Debug from 'debug';
+import * as Chalk from 'chalk';
 
+import { ContextData, DefaultResult, ResponseInfo, ResponseMethods } from './';
 import { ErrorMessage, ErrorMessageInfo } from './error';
 import { getRouteName, getContextData } from './utils';
 
 export interface ValidatorOptions {
   [key: string]: RegExp | ((value: any) => boolean);
 }
+
+const log = Debug('validator');
 
 /**
  * validator decorator
@@ -61,6 +65,8 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
       result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: ${ item.message.value }`).filter(item => !!item).join('    ');
       result.success = !result.message;
       ctx.body = result;
+
+      log(`${ result.success ? Chalk.default.cyan('valid') : Chalk.default.red('invalid') } \t ${ Chalk.default.gray(result.message) }`);
 
       return result.success ? originalMethod(ctx) : result;
     };
