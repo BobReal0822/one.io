@@ -67,8 +67,6 @@ export class Tocken {
       console.log('error in Tocken.verify: ', err);
     });
 
-    console.log('clientTocken & serverTocken in verify: ', clientTocken, serverTocken);
-
     return clientTocken.value === serverTocken;
   }
 
@@ -81,30 +79,12 @@ export class Tocken {
   }
 
   static getTockenByName(name: string): Promise<string> {
-    console.log('name in getTockenByName: ', name);
-
     return new Promise((resolve, reject) => Client.get(name, (err, value) => {
       if (err) {
-        console.log('error in getTockenByName: ', name, err);
         reject(err);
       }
 
       resolve(value);
     }));
   }
-
-  // static async getAll(): Promise<any> {
-  //   return new Promise((resolve, reject) => Client.keys('*', (err, keys) => {
-  //     if (err) {
-  //       reject(err);
-  //     }
-
-  //     const data: TockenInfo[] = keys.map(key => {
-  //       name: key,
-  //       value:
-  //     });
-
-  //     resolve(data);
-  //   }));
-  // }
 }

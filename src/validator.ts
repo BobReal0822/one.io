@@ -19,20 +19,12 @@ export interface ValidatorOptions {
  * @returns {MethodDecorator}
  */
 export function Validator(options: ValidatorOptions = {}): MethodDecorator {
-  console.log('1 in Validator: ');
-
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-
-    console.log('2 in Validator: ');
 
     descriptor.value = (ctx: Context, next: any) => {
       const result: ResponseInfo = _.cloneDeep(DefaultResult);
       const { path } = ctx.request;
-
-      console.log('in in in \n\n\n');
-
-      console.log('3 in Validator: ', ctx.body);
 
       if (ctx.body && ctx.body.result && (ctx.body.result.success === false)) {
         return;
@@ -40,7 +32,6 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
 
       const data = getContextData(ctx);
 
-      console.log('data in validator: ', data, (ctx as any).params);
       const validateResult = Object.keys(options).map(key => {
         const validator = options[key];
         const value = data[key];
@@ -70,8 +61,6 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
       result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: ${ item.message.value }`).filter(item => !!item).join('    ');
       result.success = !result.message;
       ctx.body = result;
-
-      console.log('result in validator : ', result);
 
       return result.success ? originalMethod(ctx) : result;
     };

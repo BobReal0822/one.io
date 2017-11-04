@@ -6,7 +6,8 @@
   "typings": "build/src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "mocha"
+    "test": "mocha",
+    "tsc": "tsc -w"
   },
   "author": "",
   "license": "MIT",

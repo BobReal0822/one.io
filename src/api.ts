@@ -39,30 +39,20 @@ export const DefaultApiOptions = {
 export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
   const dynamicApiReg = /\:[a-zA-Z]+/;
 
-  console.log('1 in permission.');
-
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
-    console.log('2 in permission.');
     const originalMethod = descriptor.value;
-
     const cookieKeys = Object.assign({}, DefaultApiOptions.cookies, options.cookies);
-
-    console.log('Permission in api: ');
 
     descriptor.value = async (ctx: Context, next: any) => {
       await next();
       const { path, method } = ctx.request;
       const apiOptions = Object.assign({}, DefaultApiOptions, options);
+      const params = getParams(apiOptions.path, path);
       let result: ResponseInfo = _.cloneDeep(DefaultResult);
+      let res = {};
 
       apiOptions.permission = options.permission;
       apiOptions.path = options.path ? filtePath(options.path) : getRouteName(propertyKey);
-      const params = getParams(apiOptions.path, path);
-
-      console.log('3 in Permission path: ', path, apiOptions.path);
-      console.log('4 in Permission: ', apiOptions.permission);
-      console.log('params in api: ', params);
-      let res = {};
 
       if (!params.isValid || method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
         return;
@@ -73,10 +63,9 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           res = await originalMethod(ctx, next);
           ctx.body = Object.assign({}, result, res);
 
-          console.log('pass 1 & ctx.body: ', apiOptions.path, (ctx as any).params);
-
           return res;
         } catch (err) {
+          // TODO
           console.log('err in pass: ', err);
         }
 
@@ -84,7 +73,6 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
       } else {
         const userName = ctx.cookies.get(cookieKeys.userName);
         const tocken = ctx.cookies.get(cookieKeys.tocken);
-        console.log('userName & tocken in Api: ', userName, tocken);
 
         if (!userName) {
           result = formantErrorMessage(ErrorMessage.permission.invalid);
@@ -95,7 +83,6 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           const isPermissionValid = Permission.verify(userPermission, apiOptions.permission);
           const isTockenValid = await Tocken.verify(new Tocken(userName, tocken));
 
-          console.log('permission verify in Api: ', isPermissionValid, userPermission, apiOptions.permission);
           if (!isTockenValid) {
             result = formantErrorMessage(ErrorMessage.tocken.invalid);
           } else if (!isPermissionValid) {
@@ -104,8 +91,6 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
             (ctx as any).params = params.data;
             res = await originalMethod(ctx, next);
             ctx.body = Object.assign({}, result, res);
-
-            // console.log('pass 1 & ctx.body: ', apiOptions.path, (ctx as any).params);
 
             return res;
           }
@@ -117,4 +102,60 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
       return;
     };
   };
+}
+
+/**
+ * method get
+ *
+ * @export
+ * @template T
+ * @param {ApiOptions<T>} options
+ * @returns {MethodDecorator}
+ */
+export function get<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
+  return Api(Object.assign({}, options, {
+    method: 'get'
+  }));
+}
+
+/**
+ * method post
+ *
+ * @export
+ * @template T
+ * @param {ApiOptions<T>} options
+ * @returns {MethodDecorator}
+ */
+export function post<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
+  return Api(Object.assign({}, options, {
+    method: 'post'
+  }));
+}
+
+/**
+ * method del
+ *
+ * @export
+ * @template T
+ * @param {ApiOptions<T>} options
+ * @returns {MethodDecorator}
+ */
+export function del<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
+  return Api(Object.assign({}, options, {
+    method: 'delete'
+  }));
+}
+
+/**
+ * method put
+ *
+ * @export
+ * @template T
+ * @param {ApiOptions<T>} options
+ * @returns {MethodDecorator}
+ */
+export function put<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
+  return Api(Object.assign({}, options, {
+    method: 'put'
+  }));
 }

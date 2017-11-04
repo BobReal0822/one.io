@@ -75,8 +75,6 @@ export class Router {
 
                 return methods && methods.length && methods.map(method => {
                     const func: Middleware = apiClass[method] && apiClass[method];
-                    // ctx.app.use(func);
-                    console.log(' call func now: ');
 
                     try {
                         // TODO: is middleware or not?
