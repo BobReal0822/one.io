@@ -21,7 +21,8 @@ export declare const DefaultApiOptions: {
         tocken: string;
     };
 };
-export declare function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorator;
+export declare function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: boolean): MethodDecorator;
+export declare function route<T extends Permission>(options: ApiOptions<T>): MethodDecorator;
 export declare function get<T extends Permission>(options: ApiOptions<T>): MethodDecorator;
 export declare function post<T extends Permission>(options: ApiOptions<T>): MethodDecorator;
 export declare function del<T extends Permission>(options: ApiOptions<T>): MethodDecorator;

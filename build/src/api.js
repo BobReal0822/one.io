@@ -25,7 +25,7 @@ exports.DefaultApiOptions = {
     }
 };
 const log = Debug('api');
-function Api(options) {
+function Api(options, isRoute) {
     const dynamicApiReg = /\:[a-zA-Z]+/;
     return (target, propertyKey, descriptor) => {
         const originalMethod = descriptor.value;
@@ -34,7 +34,7 @@ function Api(options) {
         apiOptions.permission = options.permission;
         apiOptions.path = options.path ? utils_1.filtePath(options.path) : utils_1.getRouteName(propertyKey);
         log(`load  ${Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`)} \t ${Chalk.default.gray(String(apiOptions.permission && apiOptions.permission.getValues() || ''))}`);
-        descriptor.value = (ctx, next) => __awaiter(this, void 0, void 0, function* () {
+        descriptor.value = (ctx, next, route) => __awaiter(this, void 0, void 0, function* () {
             yield next();
             const { path, method } = ctx.request;
             if (method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
@@ -46,7 +46,7 @@ function Api(options) {
                 const params = utils_1.getParams(apiOptions.path, path);
                 let result = _.cloneDeep(_1.DefaultResult);
                 let res = {};
-                if (!params.isValid) {
+                if (!params.isValid && !(isRoute && (path === `/${route}` || (path === '/' && route === 'index')))) {
                     return;
                 }
                 else if (!apiOptions.permission) {
@@ -55,9 +55,14 @@ function Api(options) {
                         ctx.params = params.data;
                         ctx.req.data = data;
                         res = yield originalMethod(ctx, next);
-                        ctx.body = Object.assign({}, result, res);
                         log(Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`));
-                        return res;
+                        if (isRoute) {
+                            return ctx.render(route, res);
+                        }
+                        else {
+                            ctx.body = Object.assign({}, result, res);
+                            return res;
+                        }
                     }
                     catch (err) {
                         throw new Error(`Api error: ${err}`);
@@ -84,19 +89,32 @@ function Api(options) {
                         ctx.params = params.data;
                         ctx.req.data = data;
                         res = yield originalMethod(ctx, next);
-                        ctx.body = Object.assign({}, result, res);
                         log(`${Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`)} \t permission: ${isPermissionValid} \t tocken: ${isTockenValid}`);
-                        return res;
+                        if (isRoute) {
+                            return ctx.render(route, res);
+                        }
+                        else {
+                            ctx.body = Object.assign({}, result, res);
+                            return res;
+                        }
                     }
                 }
-                ctx.body = result;
                 log(`${Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`)} ${result.message}`);
+                if (!isRoute) {
+                    ctx.body = result;
+                }
             }
             return;
         });
     };
 }
 exports.Api = Api;
+function route(options) {
+    return Api(Object.assign({}, options, {
+        method: 'get'
+    }), true);
+}
+exports.route = route;
 function get(options) {
     return Api(Object.assign({}, options, {
         method: 'get'

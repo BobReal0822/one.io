@@ -14,7 +14,8 @@ export interface ContextData {
 }
 export declare const DefaultResult: ResponseInfo;
 export interface RouterOptions {
-    routePath: string;
+    apiPath?: string;
+    routePath?: string;
 }
 export declare type NextInfo = () => Promise<any>;
 export declare class Router {
@@ -22,5 +23,6 @@ export declare class Router {
     private options;
     constructor(options?: RouterOptions);
     routes(app: Koa): any;
+    private getRouterFiles();
     private loadRoutes(app);
 }

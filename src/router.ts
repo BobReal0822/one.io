@@ -28,13 +28,15 @@ export const DefaultResult: ResponseInfo = {
 };
 
 export interface RouterOptions {
-  routePath: string;
+  apiPath?: string;
+  routePath?: string;
 }
 
 export type NextInfo = () => Promise<any>;
 
 const DefaultRouterOptions: RouterOptions = {
-  routePath: './route'
+  apiPath: './route/api',
+  routePath: './route/page'
 };
 
 /**
@@ -48,7 +50,7 @@ export class Router {
   private options: RouterOptions;
 
   constructor(options: RouterOptions = DefaultRouterOptions) {
-    this.options = Object.assign({}, options);
+    this.options = Object.assign({}, DefaultRouterOptions, options);
   }
 
   public routes(app: Koa): any {
@@ -59,36 +61,74 @@ export class Router {
       }
   }
 
-  private loadRoutes(app: Koa) {
+  private getRouterFiles() {
     const fileReg = /\.js$/;
+    const nameReg = /^(.+)\.js$/;
+    const funcs: {
+      func: Middleware,
+      name?: string;
+    }[] = [];
     const routePath = Path.resolve(process.cwd(), this.options.routePath);
-    const files = getFiles(routePath, fileReg);
-    const funcs: Middleware[] = [];
+    const apiPath = Path.resolve(process.cwd(), this.options.apiPath);
+    const apiFiles = getFiles(apiPath, fileReg).map(file => ({
+      file
+    }));
+    const routeFiles = getFiles(routePath, fileReg).map(file => {
+      const relativeName = Path.relative(this.options.routePath || '/', file);
+      const matches = relativeName.match(nameReg);
+      const name = matches && matches[1] || '';
+
+      return {
+        file,
+        name
+      };
+    });
 
     try {
-      files.map(file => {
+      apiFiles.concat(routeFiles).map((item: {
+        file: string;
+        name?: string;
+      }) => {
         // tslint:disable-next-line
-        const apiModule = require(file);
+        const apiModule = require(item.file);
         const apiClass = apiModule && apiModule.default;
         const methods = apiClass && getMethods(apiClass);
 
         return methods && methods.length && methods.map(method => {
           const func: Middleware = apiClass[method] && apiClass[method];
+          const name = item.name;
 
           try {
             if (typeof func === 'function') {
-              funcs.push(func);
+              funcs.push({
+                func,
+                name
+              });
             }
           } catch (err) {
             throw new Error(`in loadRoutes: ${ err }`);
           }
-
-          return;
         });
       });
+    } catch (err) {
+      throw new Error(`in loadRoutes: ${ err }`);
+    }
 
-      funcs.map(func => {
-        app.use(func);
+    return funcs;
+  }
+
+  private loadRoutes(app: Koa) {
+    const fileReg = /\.js$/;
+    const nameReg = /^.*\/(\w+)\.\w+$/;
+    const apiPath = Path.resolve(process.cwd(), this.options.apiPath);
+    const files = getFiles(apiPath, fileReg);
+    const funcs = this.getRouterFiles();
+
+    try {
+      funcs.map(item => {
+        app.use(async (ctx: Koa.Context, next: () => Promise<any>) => {
+          return item && item.func && item.func.call(this, ctx, next, item.name);
+        });
       });
     } catch (err) {
       throw new Error(`in loadRoutes: ${ err }`);

@@ -29,14 +29,14 @@ import { Router } from 'one.io';
 const App = new Koa();
 const router = new Router({
   apiPath: './build/route/api',
-  pagePath: './build/route/page'
+  routePath: './build/route/route'
 });
 router.routes(App);
 
 App.listen(4000);
 ```
 
-### api & page
+### api route
 Build your routes under the directories.
 
 ```typescript
@@ -58,6 +58,26 @@ export default class User {
     const result: ResponseInfo = await registerUser(name, password);
 
     return result;
+  }
+}
+```
+
+### page route
+Render data for pages.
+
+```typescript
+import { validator, ResponseInfo, Tocken, get, post, route } from 'one.io';
+
+export default class Index {
+  @route<UserPermission>({
+  })
+  static async userLogin(ctx: Context, next: Function) {
+    const { query } = ctx;
+    const { name, password } = query;
+
+    return {
+      title: 'one.io'
+    };
   }
 }
 ```
