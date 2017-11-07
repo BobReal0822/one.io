@@ -22,7 +22,7 @@ const log = Debug('validator');
  * @param {ValidatorOptions} [options={}]
  * @returns {MethodDecorator}
  */
-export function Validator(options: ValidatorOptions = {}): MethodDecorator {
+export function validator(options: ValidatorOptions = {}): MethodDecorator {
   return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
 
@@ -36,7 +36,6 @@ export function Validator(options: ValidatorOptions = {}): MethodDecorator {
 
       const data = (ctx.req as any).data || {};
 
-      console.log('ctx.req.body in validator: ', data, data.name, typeof data);
       const validateResult = Object.keys(options).map(key => {
         const validator = options[key];
         const value = data[key];

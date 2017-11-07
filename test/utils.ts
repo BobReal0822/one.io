@@ -38,7 +38,7 @@ describe('Utils', () => {
 
   describe('getFiles', () => {
     it('should return true', () => {
-      Utils.getFiles(Path.join(__dirname, './../../test'), /^[0-9a-zA-Z]+\.ts$/).length.should.equal(5);
+      Utils.getFiles(Path.join(__dirname, './../../test'), /^[0-9a-zA-Z]+\.ts$/).length.should.equal(1);
     });
   });
 

@@ -15,7 +15,7 @@ export interface ApiOptions<Permission> {
   tocken?: string;
   test?: boolean;
   cookies?: {
-    userName: string;
+    user: string;
     tocken: string;
   };
 }
@@ -26,7 +26,7 @@ export const DefaultApiOptions = {
   tocken: '',
   test: false,
   cookies: {
-    userName: 'userName',
+    user: 'user',
     tocken: 'tocken'
   }
 };
@@ -59,7 +59,7 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
       if (method.toLowerCase() !== (apiOptions.method || '').toLowerCase()) {
         return;
       } else {
-        const userName = ctx.cookies.get(cookieKeys.userName);
+        const userName = ctx.cookies.get(cookieKeys.user);
         const tocken = ctx.cookies.get(cookieKeys.tocken);
         const params = getParams(apiOptions.path, path);
         let result: ResponseInfo = _.cloneDeep(DefaultResult);
@@ -70,7 +70,6 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
         } else if (!apiOptions.permission) {
           try {
             const data = await getBody(ctx);
-            console.log('data in api: ', data);
 
             (ctx as any).params = params.data;
             (ctx.req as any).data = data;

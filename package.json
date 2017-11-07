@@ -1,16 +1,26 @@
 {
   "name": "one.io",
-  "version": "1.0.4",
-  "description": "",
+  "version": "1.0.5",
+  "description": "A feature-rich routing middleware for koa",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "mocha ./build/test",
-    "tsc": "tsc -w"
+    "tsc": "tsc -w",
+    "clean": "rm -rf build",
+    "bare-test": "mocha build/test/index.js",
+    "test": "istanbul cover _mocha build/test",
+    "coveralls": "cat coverage/lcov.info | coveralls"
   },
-  "author": "",
+  "author": "ephoton",
   "license": "MIT",
+  "keywords": [
+    "one.io",
+    "middleware for koa"
+  ],
+  "directories": {
+    "test": "test"
+  },
   "dependencies": {
     "@types/bcryptjs": "^2.4.1",
     "@types/bluebird": "^3.5.16",
@@ -39,6 +49,16 @@
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
+    "coveralls": "^3.0.0",
+    "istanbul": "^0.4.5",
     "mocha": "^4.0.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ephoton/one.io.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ephoton/one.io/issues"
+  },
+  "homepage": "https://github.com/ephoton/one.io#readme"
 }
