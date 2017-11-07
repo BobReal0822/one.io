@@ -3,7 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/ephoton/one.io/badge.svg?branch=master)](https://coveralls.io/github/ephoton/one.io?branch=master)
 
 # one.io
-1️⃣A feature-rich routing middleware for koa.
+1️⃣ A feature-rich routing middleware for koa.
 
 ## Prerequisites
 - Node.js 7+
@@ -100,7 +100,7 @@ export const UserPermissions = {
   tocken: 'tocken'
 }'
 
-### Features
+## Features
 - Parse http request body.
 - Verify Permission and tocken.
 - Validate request parameters.
