@@ -18,7 +18,7 @@ yarn add one.io
 ```
 
 ## Usage
-###router
+### router
 Initial your router in 'app.ts'
 
 ```typescript
