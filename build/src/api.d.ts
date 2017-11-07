@@ -4,7 +4,7 @@ export interface ApiOptions<Permission> {
     path?: string;
     method?: ResponseMethods;
     permission?: Permission;
-    tocken?: string;
+    tocken?: boolean;
     test?: boolean;
     cookies?: {
         user: string;
@@ -14,7 +14,7 @@ export interface ApiOptions<Permission> {
 export declare const DefaultApiOptions: {
     path: string;
     method: string;
-    tocken: string;
+    tocken: boolean;
     test: boolean;
     cookies: {
         user: string;

@@ -12,7 +12,7 @@ export interface ApiOptions<Permission> {
   path?: string;
   method?: ResponseMethods;
   permission?: Permission;
-  tocken?: string;
+  tocken?: boolean;
   test?: boolean;
   cookies?: {
     user: string;
@@ -23,7 +23,7 @@ export interface ApiOptions<Permission> {
 export const DefaultApiOptions = {
   path: '',
   method: 'get',
-  tocken: '',
+  tocken: false,
   test: false,
   cookies: {
     user: 'user',
@@ -60,7 +60,7 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
         return;
       } else {
         const userName = ctx.cookies.get(cookieKeys.user);
-        const tocken = ctx.cookies.get(cookieKeys.tocken);
+        const tocken = apiOptions.tocken ? ctx.cookies.get(cookieKeys.tocken) : '';
         const params = getParams(apiOptions.path, path);
         let result: ResponseInfo = _.cloneDeep(DefaultResult);
         let res = {};
@@ -83,12 +83,12 @@ export function Api<T extends Permission>(options: ApiOptions<T>): MethodDecorat
           }
         } else if (!userName) {
           result = formantErrorMessage(ErrorMessage.permission.invalid);
-        } else if (!tocken) {
+        } else if (apiOptions.tocken && !tocken) {
           result = formantErrorMessage(ErrorMessage.tocken.missing);
         } else {
           const userPermission = await apiOptions.permission.getUserPermissionByName(userName);
           const isPermissionValid = Permission.verify(userPermission, apiOptions.permission);
-          const isTockenValid = await Tocken.verify(new Tocken(userName, tocken));
+          const isTockenValid = apiOptions.tocken ? await Tocken.verify(new Tocken(userName, tocken)) : true;
 
           if (!isTockenValid) {
             result = formantErrorMessage(ErrorMessage.tocken.invalid);

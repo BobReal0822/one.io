@@ -17,7 +17,7 @@ const utils_1 = require("./utils");
 exports.DefaultApiOptions = {
     path: '',
     method: 'get',
-    tocken: '',
+    tocken: false,
     test: false,
     cookies: {
         user: 'user',
@@ -42,7 +42,7 @@ function Api(options) {
             }
             else {
                 const userName = ctx.cookies.get(cookieKeys.user);
-                const tocken = ctx.cookies.get(cookieKeys.tocken);
+                const tocken = apiOptions.tocken ? ctx.cookies.get(cookieKeys.tocken) : '';
                 const params = utils_1.getParams(apiOptions.path, path);
                 let result = _.cloneDeep(_1.DefaultResult);
                 let res = {};
@@ -66,13 +66,13 @@ function Api(options) {
                 else if (!userName) {
                     result = utils_1.formantErrorMessage(_1.ErrorMessage.permission.invalid);
                 }
-                else if (!tocken) {
+                else if (apiOptions.tocken && !tocken) {
                     result = utils_1.formantErrorMessage(_1.ErrorMessage.tocken.missing);
                 }
                 else {
                     const userPermission = yield apiOptions.permission.getUserPermissionByName(userName);
                     const isPermissionValid = permission_1.Permission.verify(userPermission, apiOptions.permission);
-                    const isTockenValid = yield permission_1.Tocken.verify(new permission_1.Tocken(userName, tocken));
+                    const isTockenValid = apiOptions.tocken ? yield permission_1.Tocken.verify(new permission_1.Tocken(userName, tocken)) : true;
                     if (!isTockenValid) {
                         result = utils_1.formantErrorMessage(_1.ErrorMessage.tocken.invalid);
                     }

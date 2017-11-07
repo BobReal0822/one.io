@@ -40,7 +40,7 @@ App.listen(4000);
 Build your routes under the directories.
 
 ```typescript
-import { validator, ResponseInfo, Tocken, get, post } from 'gus-router';
+import { validator, ResponseInfo, Tocken, get, post } from 'one.io';
 
 export default class User {
   // methods: 'get' | 'post' | 'put' | 'head' | 'delete'
