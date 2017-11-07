@@ -6,7 +6,3 @@ before_script:
 - npm run build
 after_success:
 - npm run coveralls
-deploy:
-  provider: npm
-  email: i@ephoton.me
-  skip_cleanup: true
