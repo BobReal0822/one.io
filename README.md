@@ -113,7 +113,7 @@ export const UserPermissions = {
 
 ### api & page
 * **path**: Path for the route. Optional, automatically transform from method name.
-  > For example, method named 'userRegister' means the route path is '/user/register'
+  > For example, a method named 'userRegister' means the route path is '/user/register'
 * **permission**: Set a permission for a route. Optional, default value is 'undefined'.
 * **cookies**: Set the keys for user name and tocken. Optional, default is '{
   user: 'user',
