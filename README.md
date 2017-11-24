@@ -110,15 +110,15 @@ export const UserPermissions = {
 ### router
 * **apiPath**: A directory for api routes. Optional, default is './route/api'.
 * **pagePath**: A directory for page routes. Optional, default is './route/page'.
+* **cookies**: Set the keys for user name and tocken. Optional, default is '{
+  user: 'user',
+  tocken: 'tocken'
+}'
 
 ### api & page
 * **path**: Path for the route. Optional, automatically transform from method name.
   > For example, a method named 'userRegister' means the route path is '/user/register'
 * **permission**: Set a permission for a route. Optional, default value is 'undefined'.
-* **cookies**: Set the keys for user name and tocken. Optional, default is '{
-  user: 'user',
-  tocken: 'tocken'
-}'
 
 ## Features
 - Parse http request body.
