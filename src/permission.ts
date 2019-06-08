@@ -42,65 +42,69 @@ export abstract class Permission {
   }
 }
 
-export interface TockenInfo {
+export interface TokenInfo {
   name: string;
   value: string;
 }
 
 /**
- * Verify request tocken.
+ * Verify request token.
  *
  * @export
- * @class Tocken
+ * @class Token
  */
-export class Tocken {
-  private tocken: TockenInfo;
+export class Token {
+  private token: TokenInfo;
 
-  constructor(name: string, tocken?: string) {
+  constructor(name: string, token?: string) {
     if (!name) {
       throw new Error(`name is invalid.`);
     }
 
-    this.tocken = {
+    this.token = {
       name,
-      value: tocken || Tocken.generateTocken(name)
+      value: token || Token.generateToken(name)
     };
 
     return this;
   }
 
-  public getTocken(): TockenInfo {
-    return this.tocken;
+  public getToken(): TokenInfo {
+    return this.token;
   }
 
-  static generateTocken<Permission>(name: string): string {
-    return Bcrypt.hashSync(`${ name }${ new Date().getTime() }`);
+  static generateToken<Permission>(name: string): string {
+    return Bcrypt.hashSync(`${name}${new Date().getTime()}`);
   }
 
-  static async verify(tocken: Tocken): Promise<boolean> {
-    const clientTocken = tocken.getTocken();
-    const serverTocken = await Tocken.getTockenByName(clientTocken.name).catch(err => {
-      throw new Error(`error in Tocken.verify: ${ err }`);
-    });
+  static async verify(token: Token): Promise<boolean> {
+    const clientToken = token.getToken();
+    const serverToken = await Token.getTokenByName(clientToken.name).catch(
+      err => {
+        throw new Error(`error in Token.verify: ${err}`);
+      }
+    );
 
-    return clientTocken.value === serverTocken;
+    return clientToken.value === serverToken;
   }
 
   public save(): string {
-    const { name, value } = this.tocken;
+    const { name, value } = this.token;
 
     Client.set(name, value);
 
     return value;
   }
 
-  static getTockenByName(name: string): Promise<string> {
-    return new Promise((resolve, reject) => Client.get(name, (err, value) => {
-      if (err) {
-        reject(err);
-      }
+  static getTokenByName(name: string): Promise<string> {
+    return new Promise((resolve, reject) =>
+      Client.get(name, (err, value) => {
+        if (err) {
+          reject(err);
+        }
 
-      resolve(value);
-    }));
+        resolve(value);
+      })
+    );
   }
 }

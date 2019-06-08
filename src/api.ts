@@ -1,33 +1,44 @@
-
 import { Context } from 'koa';
 import * as _ from 'lodash';
 import * as Debug from 'debug';
 import * as Chalk from 'chalk';
 
-import { ErrorMessage, ErrorMessageInfo, DefaultResult, ResponseInfo, ResponseMethods, getBody } from './';
-import { Permission, Tocken } from './permission';
-import { getRouteName, filtePath, getParams, formantErrorMessage } from './utils';
+import {
+  ErrorMessage,
+  ErrorMessageInfo,
+  DefaultResult,
+  ResponseInfo,
+  ResponseMethods,
+  getBody
+} from './';
+import { Permission, Token } from './permission';
+import {
+  getRouteName,
+  filterPath,
+  getParams,
+  formantErrorMessage
+} from './utils';
 
 export interface ApiOptions<Permission> {
   path?: string;
   method?: ResponseMethods;
   permission?: Permission;
-  tocken?: boolean;
+  token?: boolean;
   test?: boolean;
   cookies?: {
     user: string;
-    tocken: string;
+    token: string;
   };
 }
 
 export const DefaultApiOptions = {
   path: '',
   method: 'get',
-  tocken: false,
+  token: false,
   test: false,
   cookies: {
     user: 'user',
-    tocken: 'tocken'
+    token: 'token'
   }
 };
 
@@ -37,20 +48,41 @@ const log = Debug('api');
  * permission decorator
  *
  * @export
- * @param {IPermisson} options
+ * @param {ApiOptions<T>} options
  * @returns {MethodDecorator}
  */
-export function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: boolean): MethodDecorator {
+export function Api<T extends Permission>(
+  options: ApiOptions<T>,
+  isRoute?: boolean
+): MethodDecorator {
   const dynamicApiReg = /\:[a-zA-Z]+/;
 
-  return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (
+    target: { [key: string]: any },
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) => {
     const originalMethod = descriptor.value;
-    const cookieKeys = Object.assign({}, DefaultApiOptions.cookies, options.cookies);
+    const cookieKeys = Object.assign(
+      {},
+      DefaultApiOptions.cookies,
+      options.cookies
+    );
     const apiOptions = Object.assign({}, DefaultApiOptions, options);
 
     apiOptions.permission = options.permission;
-    apiOptions.path = options.path ? filtePath(options.path) : getRouteName(propertyKey);
-    log(`load  ${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`) } \t ${ Chalk.default.gray(String(apiOptions.permission && apiOptions.permission.getValues() || '')) }`);
+    apiOptions.path = options.path
+      ? filterPath(options.path)
+      : getRouteName(propertyKey);
+    log(
+      `load  ${Chalk.default.cyan(
+        `${apiOptions.method.toUpperCase()} ${apiOptions.path}`
+      )} \t ${Chalk.default.gray(
+        String(
+          (apiOptions.permission && apiOptions.permission.getValues()) || ''
+        )
+      )}`
+    );
 
     descriptor.value = async (ctx: Context, next: any, route?: string) => {
       await next();
@@ -60,12 +92,18 @@ export function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: bool
         return;
       } else {
         const userName = ctx.cookies.get(cookieKeys.user);
-        const tocken = apiOptions.tocken ? ctx.cookies.get(cookieKeys.tocken) : '';
+        const token = apiOptions.token ? ctx.cookies.get(cookieKeys.token) : '';
         const params = getParams(apiOptions.path, path);
         let result: ResponseInfo = _.cloneDeep(DefaultResult);
         let res = {};
 
-        if (!params.isValid && !(isRoute && (path === `/${ route }` || (path === '/' && route === 'index')))) {
+        if (
+          !params.isValid &&
+          !(
+            isRoute &&
+            (path === `/${route}` || (path === '/' && route === 'index'))
+          )
+        ) {
           return;
         } else if (!apiOptions.permission) {
           try {
@@ -74,7 +112,11 @@ export function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: bool
             (ctx as any).params = params.data;
             (ctx.req as any).data = data;
             res = await originalMethod(ctx, next);
-            log(Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`));
+            log(
+              Chalk.default.cyan(
+                `${apiOptions.method.toUpperCase()} ${apiOptions.path}`
+              )
+            );
 
             if (isRoute) {
               return (ctx as any).render(route, res);
@@ -84,19 +126,26 @@ export function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: bool
               return res;
             }
           } catch (err) {
-            throw new Error(`Api error: ${ err }`);
+            throw new Error(`Api error: ${err}`);
           }
         } else if (!userName) {
           result = formantErrorMessage(ErrorMessage.permission.invalid);
-        } else if (apiOptions.tocken && !tocken) {
-          result = formantErrorMessage(ErrorMessage.tocken.missing);
+        } else if (apiOptions.token && !token) {
+          result = formantErrorMessage(ErrorMessage.token.missing);
         } else {
-          const userPermission = await apiOptions.permission.getUserPermissionByName(userName);
-          const isPermissionValid = Permission.verify(userPermission, apiOptions.permission);
-          const isTockenValid = apiOptions.tocken ? await Tocken.verify(new Tocken(userName, tocken)) : true;
+          const userPermission = await apiOptions.permission.getUserPermissionByName(
+            userName
+          );
+          const isPermissionValid = Permission.verify(
+            userPermission,
+            apiOptions.permission
+          );
+          const isTokenValid = apiOptions.token
+            ? await Token.verify(new Token(userName, token))
+            : true;
 
-          if (!isTockenValid) {
-            result = formantErrorMessage(ErrorMessage.tocken.invalid);
+          if (!isTokenValid) {
+            result = formantErrorMessage(ErrorMessage.token.invalid);
           } else if (!isPermissionValid) {
             result = formantErrorMessage(ErrorMessage.permission.invalid);
           } else {
@@ -105,7 +154,11 @@ export function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: bool
             (ctx as any).params = params.data;
             (ctx.req as any).data = data;
             res = await originalMethod(ctx, next);
-            log(`${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`)} \t permission: ${ isPermissionValid } \t tocken: ${ isTockenValid }`);
+            log(
+              `${Chalk.default.cyan(
+                `${apiOptions.method.toUpperCase()} ${apiOptions.path}`
+              )} \t permission: ${isPermissionValid} \t token: ${isTokenValid}`
+            );
 
             if (isRoute) {
               return (ctx as any).render(route, res);
@@ -117,7 +170,11 @@ export function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: bool
           }
         }
 
-        log(`${ Chalk.default.cyan(`${ apiOptions.method.toUpperCase() } ${ apiOptions.path }`)} ${ result.message }`);
+        log(
+          `${Chalk.default.cyan(
+            `${apiOptions.method.toUpperCase()} ${apiOptions.path}`
+          )} ${result.message}`
+        );
         if (!isRoute) {
           ctx.body = result;
         }
@@ -136,10 +193,15 @@ export function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: bool
  * @param {ApiOptions<T>} options
  * @returns {MethodDecorator}
  */
-export function route<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
-  return Api(Object.assign({}, options, {
-    method: 'get'
-  }), true);
+export function route<T extends Permission>(
+  options: ApiOptions<T>
+): MethodDecorator {
+  return Api(
+    Object.assign({}, options, {
+      method: 'get'
+    }),
+    true
+  );
 }
 
 /**
@@ -150,10 +212,14 @@ export function route<T extends Permission>(options: ApiOptions<T>): MethodDecor
  * @param {ApiOptions<T>} options
  * @returns {MethodDecorator}
  */
-export function get<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
-  return Api(Object.assign({}, options, {
-    method: 'get'
-  }));
+export function get<T extends Permission>(
+  options: ApiOptions<T>
+): MethodDecorator {
+  return Api(
+    Object.assign({}, options, {
+      method: 'get'
+    })
+  );
 }
 
 /**
@@ -164,10 +230,14 @@ export function get<T extends Permission>(options: ApiOptions<T>): MethodDecorat
  * @param {ApiOptions<T>} options
  * @returns {MethodDecorator}
  */
-export function post<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
-  return Api(Object.assign({}, options, {
-    method: 'post'
-  }));
+export function post<T extends Permission>(
+  options: ApiOptions<T>
+): MethodDecorator {
+  return Api(
+    Object.assign({}, options, {
+      method: 'post'
+    })
+  );
 }
 
 /**
@@ -178,10 +248,14 @@ export function post<T extends Permission>(options: ApiOptions<T>): MethodDecora
  * @param {ApiOptions<T>} options
  * @returns {MethodDecorator}
  */
-export function del<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
-  return Api(Object.assign({}, options, {
-    method: 'delete'
-  }));
+export function del<T extends Permission>(
+  options: ApiOptions<T>
+): MethodDecorator {
+  return Api(
+    Object.assign({}, options, {
+      method: 'delete'
+    })
+  );
 }
 
 /**
@@ -192,8 +266,12 @@ export function del<T extends Permission>(options: ApiOptions<T>): MethodDecorat
  * @param {ApiOptions<T>} options
  * @returns {MethodDecorator}
  */
-export function put<T extends Permission>(options: ApiOptions<T>): MethodDecorator {
-  return Api(Object.assign({}, options, {
-    method: 'put'
-  }));
+export function put<T extends Permission>(
+  options: ApiOptions<T>
+): MethodDecorator {
+  return Api(
+    Object.assign({}, options, {
+      method: 'put'
+    })
+  );
 }

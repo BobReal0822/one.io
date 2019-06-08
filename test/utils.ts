@@ -9,7 +9,6 @@ const { assert, expect } = Chai;
 const should = Chai.should();
 
 describe('Utils', () => {
-
   describe('getRouteName', () => {
     it('should return true', () => {
       Utils.getRouteName('userRegister').should.equal('/user/register');
@@ -38,13 +37,16 @@ describe('Utils', () => {
 
   describe('getFiles', () => {
     it('should return true', () => {
-      Utils.getFiles(Path.join(__dirname, './../../test'), /^[0-9a-zA-Z]+\.ts$/).length.should.equal(1);
+      Utils.getFiles(
+        Path.join(__dirname, './../../test'),
+        /^[0-9a-zA-Z]+\.ts$/
+      ).length.should.equal(1);
     });
   });
 
-  describe('filtePath', () => {
+  describe('filterPath', () => {
     it('should return true', () => {
-      Utils.filtePath('/user/register/////').should.equal('/user/register');
+      Utils.filterPath('/user/register/////').should.equal('/user/register');
     });
   });
 

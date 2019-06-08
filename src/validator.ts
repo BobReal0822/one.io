@@ -1,11 +1,15 @@
-
 import { Context } from 'koa';
 import * as _ from 'lodash';
-import * as Vali from 'validator';
 import * as Debug from 'debug';
 import * as Chalk from 'chalk';
 
-import { ContextData, DefaultResult, ResponseInfo, ResponseMethods, getBody } from './';
+import {
+  ContextData,
+  DefaultResult,
+  ResponseInfo,
+  ResponseMethods,
+  getBody
+} from './';
 import { ErrorMessage, ErrorMessageInfo } from './error';
 import { getRouteName } from './utils';
 
@@ -23,14 +27,18 @@ const log = Debug('validator');
  * @returns {MethodDecorator}
  */
 export function validator(options: ValidatorOptions = {}): MethodDecorator {
-  return (target: { [key: string]: any }, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (
+    target: { [key: string]: any },
+    propertyKey: string,
+    descriptor: PropertyDescriptor
+  ) => {
     const originalMethod = descriptor.value;
 
     descriptor.value = async (ctx: Context, next: any) => {
       const result: ResponseInfo = _.cloneDeep(DefaultResult);
       const { path } = ctx.request;
 
-      if (ctx.body && ctx.body.result && (ctx.body.result.success === false)) {
+      if (ctx.body && ctx.body.result && ctx.body.result.success === false) {
         return;
       }
 
@@ -61,14 +69,28 @@ export function validator(options: ValidatorOptions = {}): MethodDecorator {
         };
       });
 
-      result.code = validateResult[0] && validateResult[0].message && validateResult[0].message.code || result.code;
-      result.message = validateResult.map(item => item && item.isValid ? '' : `${ item.key || '' }: ${ item.message.value }`).filter(item => !!item).join('    ');
+      result.code =
+        (validateResult[0] &&
+          validateResult[0].message &&
+          validateResult[0].message.code) ||
+        result.code;
+      result.message = validateResult
+        .map(item =>
+          item && item.isValid ? '' : `${item.key || ''}: ${item.message.value}`
+        )
+        .filter(item => !!item)
+        .join('    ');
       result.success = !result.message;
       ctx.body = result;
-      log(`${ result.success ? Chalk.default.cyan('valid') : Chalk.default.red('invalid') } \t ${ Chalk.default.gray(result.message) }`);
+      log(
+        `${
+          result.success
+            ? Chalk.default.cyan('valid')
+            : Chalk.default.red('invalid')
+        } \t ${Chalk.default.gray(result.message)}`
+      );
 
       return result.success ? originalMethod(ctx) : result;
     };
   };
 }
-

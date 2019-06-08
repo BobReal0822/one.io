@@ -54,18 +54,18 @@ export class Router {
   }
 
   public routes(app: Koa): any {
-      try {
-        return this.loadRoutes(app);
-      } catch (err) {
-        throw new Error(`in routes: ${ err }`);
-      }
+    try {
+      return this.loadRoutes(app);
+    } catch (err) {
+      throw new Error(`in routes: ${err}`);
+    }
   }
 
   private getRouterFiles() {
     const fileReg = /\.js$/;
     const nameReg = /^(.+)\.js$/;
     const funcs: {
-      func: Middleware,
+      func: Middleware;
       name?: string;
     }[] = [];
     const routePath = Path.resolve(process.cwd(), this.options.routePath);
@@ -76,7 +76,7 @@ export class Router {
     const routeFiles = getFiles(routePath, fileReg).map(file => {
       const relativeName = Path.relative(this.options.routePath || '/', file);
       const matches = relativeName.match(nameReg);
-      const name = matches && matches[1] || '';
+      const name = (matches && matches[1]) || '';
 
       return {
         file,
@@ -85,33 +85,36 @@ export class Router {
     });
 
     try {
-      apiFiles.concat(routeFiles).map((item: {
-        file: string;
-        name?: string;
-      }) => {
-        // tslint:disable-next-line
-        const apiModule = require(item.file);
-        const apiClass = apiModule && apiModule.default;
-        const methods = apiClass && getMethods(apiClass);
+      apiFiles
+        .concat(routeFiles)
+        .map((item: { file: string; name?: string }) => {
+          // tslint:disable-next-line
+          const apiModule = require(item.file);
+          const apiClass = apiModule && apiModule.default;
+          const methods = apiClass && getMethods(apiClass);
 
-        return methods && methods.length && methods.map(method => {
-          const func: Middleware = apiClass[method] && apiClass[method];
-          const name = item.name;
+          return (
+            methods &&
+            methods.length &&
+            methods.map(method => {
+              const func: Middleware = apiClass[method] && apiClass[method];
+              const name = item.name;
 
-          try {
-            if (typeof func === 'function') {
-              funcs.push({
-                func,
-                name
-              });
-            }
-          } catch (err) {
-            throw new Error(`in loadRoutes: ${ err }`);
-          }
+              try {
+                if (typeof func === 'function') {
+                  funcs.push({
+                    func,
+                    name
+                  });
+                }
+              } catch (err) {
+                throw new Error(`in loadRoutes: ${err}`);
+              }
+            })
+          );
         });
-      });
     } catch (err) {
-      throw new Error(`in loadRoutes: ${ err }`);
+      throw new Error(`in loadRoutes: ${err}`);
     }
 
     return funcs;
@@ -127,11 +130,13 @@ export class Router {
     try {
       funcs.map(item => {
         app.use(async (ctx: Koa.Context, next: () => Promise<any>) => {
-          return item && item.func && item.func.call(this, ctx, next, item.name);
+          return (
+            item && item.func && item.func.call(this, ctx, next, item.name)
+          );
         });
       });
     } catch (err) {
-      throw new Error(`in loadRoutes: ${ err }`);
+      throw new Error(`in loadRoutes: ${err}`);
     }
   }
 }

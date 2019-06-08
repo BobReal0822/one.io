@@ -16,7 +16,11 @@ export function getRouteName(methodName: string): string {
   const reg = /[A-Z]?[a-z]+/g;
   const matches = typeof methodName === 'string' && methodName.match(reg);
 
-  return `/${matches && matches.reduce((prev, curr, index) => `${ prev.toLowerCase() }/${ curr.toLowerCase() }`) || ''}`;
+  return `/${(matches &&
+    matches.reduce(
+      (prev, curr, index) => `${prev.toLowerCase()}/${curr.toLowerCase()}`
+    )) ||
+    ''}`;
 }
 
 export function generateMessage(code: string, value: string): ErrorMessageInfo {
@@ -26,13 +30,20 @@ export function generateMessage(code: string, value: string): ErrorMessageInfo {
   };
 }
 
-export function formantErrorMessage(message: ErrorMessageInfo, success?: boolean, data?: any): ResponseInfo {
-  return Object.assign({}, {
-    success: !!success,
-    code: message.code,
-    message: message.value,
-    data: data || {}
-  });
+export function formantErrorMessage(
+  message: ErrorMessageInfo,
+  success?: boolean,
+  data?: any
+): ResponseInfo {
+  return Object.assign(
+    {},
+    {
+      success: !!success,
+      code: message.code,
+      message: message.value,
+      data: data || {}
+    }
+  );
 }
 
 export function getFiles(path: string, reg: RegExp): string[] {
@@ -57,17 +68,24 @@ export function getMethods(target: any): string[] {
     return [];
   }
 
-  return Object.getOwnPropertyNames(target).sort().filter((e, i, arr) => {
-    if (e !== arr[i + 1] && typeof target[e] === 'function') {
-      return true;
-    }
+  return Object.getOwnPropertyNames(target)
+    .sort()
+    .filter((e, i, arr) => {
+      if (e !== arr[i + 1] && typeof target[e] === 'function') {
+        return true;
+      }
 
-    return false;
-  });
+      return false;
+    });
 }
 
-export function filtePath(path: string): string {
-  return !path ? '' : `/${ path.split('/').filter(item => !!item).join('/') }`;
+export function filterPath(path: string): string {
+  return !path
+    ? ''
+    : `/${path
+        .split('/')
+        .filter(item => !!item)
+        .join('/')}`;
 }
 
 export function getParams(path: string, url: string): GetParamsReturns {
@@ -78,14 +96,14 @@ export function getParams(path: string, url: string): GetParamsReturns {
     return {
       isValid: false
     };
-  } else if (!pathMatches || !pathMatches.length && url === path) {
+  } else if (!pathMatches || (!pathMatches.length && url === path)) {
     return {
       isValid: true
     };
   }
 
   pathMatches.map(item => {
-    path = path.replace(item, '(\\\w+)');
+    path = path.replace(item, '(\\w+)');
   });
 
   const urlMatches = new RegExp(path).exec(url) || [];
@@ -110,7 +128,8 @@ export function getParams(path: string, url: string): GetParamsReturns {
 
   return {
     data,
-    isValid: urlMatches.length === pathMatches.length + 1 && pathMatches.length === Object.keys(data).length
+    isValid:
+      urlMatches.length === pathMatches.length + 1 &&
+      pathMatches.length === Object.keys(data).length
   };
 }
-
