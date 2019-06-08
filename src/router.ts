@@ -68,8 +68,8 @@ export class Router {
       func: Middleware;
       name?: string;
     }[] = [];
-    const routePath = Path.resolve(process.cwd(), this.options.routePath);
-    const apiPath = Path.resolve(process.cwd(), this.options.apiPath);
+    const routePath = Path.resolve(process.cwd(), this.options.routePath || '');
+    const apiPath = Path.resolve(process.cwd(), this.options.apiPath || '');
     const apiFiles = getFiles(apiPath, fileReg).map(file => ({
       file
     }));
@@ -123,7 +123,7 @@ export class Router {
   private loadRoutes(app: Koa) {
     const fileReg = /\.js$/;
     const nameReg = /^.*\/(\w+)\.\w+$/;
-    const apiPath = Path.resolve(process.cwd(), this.options.apiPath);
+    const apiPath = Path.resolve(process.cwd(), this.options.apiPath || '');
     const files = getFiles(apiPath, fileReg);
     const funcs = this.getRouterFiles();
 

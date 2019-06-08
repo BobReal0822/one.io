@@ -32,38 +32,38 @@ class Permission {
     }
 }
 exports.Permission = Permission;
-class Tocken {
-    constructor(name, tocken) {
+class Token {
+    constructor(name, token) {
         if (!name) {
             throw new Error(`name is invalid.`);
         }
-        this.tocken = {
+        this.token = {
             name,
-            value: tocken || Tocken.generateTocken(name)
+            value: token || Token.generateToken(name)
         };
         return this;
     }
-    getTocken() {
-        return this.tocken;
+    getToken() {
+        return this.token;
     }
-    static generateTocken(name) {
+    static generateToken(name) {
         return Bcrypt.hashSync(`${name}${new Date().getTime()}`);
     }
-    static verify(tocken) {
+    static verify(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            const clientTocken = tocken.getTocken();
-            const serverTocken = yield Tocken.getTockenByName(clientTocken.name).catch(err => {
-                throw new Error(`error in Tocken.verify: ${err}`);
+            const clientToken = token.getToken();
+            const serverToken = yield Token.getTokenByName(clientToken.name).catch(err => {
+                throw new Error(`error in Token.verify: ${err}`);
             });
-            return clientTocken.value === serverTocken;
+            return clientToken.value === serverToken;
         });
     }
     save() {
-        const { name, value } = this.tocken;
+        const { name, value } = this.token;
         Client.set(name, value);
         return value;
     }
-    static getTockenByName(name) {
+    static getTokenByName(name) {
         return new Promise((resolve, reject) => Client.get(name, (err, value) => {
             if (err) {
                 reject(err);
@@ -72,5 +72,5 @@ class Tocken {
         }));
     }
 }
-exports.Tocken = Tocken;
+exports.Token = Token;
 //# sourceMappingURL=permission.js.map

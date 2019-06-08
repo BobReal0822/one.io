@@ -6,16 +6,16 @@ export declare abstract class Permission {
     getValues(): string[];
     static verify(permission: Permission, required: Permission): boolean;
 }
-export interface TockenInfo {
+export interface TokenInfo {
     name: string;
     value: string;
 }
-export declare class Tocken {
-    private tocken;
-    constructor(name: string, tocken?: string);
-    getTocken(): TockenInfo;
-    static generateTocken<Permission>(name: string): string;
-    static verify(tocken: Tocken): Promise<boolean>;
+export declare class Token {
+    private token;
+    constructor(name: string, token?: string);
+    getToken(): TokenInfo;
+    static generateToken<Permission>(name: string): string;
+    static verify(token: Token): Promise<boolean>;
     save(): string;
-    static getTockenByName(name: string): Promise<string>;
+    static getTokenByName(name: string): Promise<string>;
 }

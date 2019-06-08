@@ -36,40 +36,44 @@ class Router {
         const fileReg = /\.js$/;
         const nameReg = /^(.+)\.js$/;
         const funcs = [];
-        const routePath = Path.resolve(process.cwd(), this.options.routePath);
-        const apiPath = Path.resolve(process.cwd(), this.options.apiPath);
+        const routePath = Path.resolve(process.cwd(), this.options.routePath || '');
+        const apiPath = Path.resolve(process.cwd(), this.options.apiPath || '');
         const apiFiles = utils_1.getFiles(apiPath, fileReg).map(file => ({
             file
         }));
         const routeFiles = utils_1.getFiles(routePath, fileReg).map(file => {
             const relativeName = Path.relative(this.options.routePath || '/', file);
             const matches = relativeName.match(nameReg);
-            const name = matches && matches[1] || '';
+            const name = (matches && matches[1]) || '';
             return {
                 file,
                 name
             };
         });
         try {
-            apiFiles.concat(routeFiles).map((item) => {
+            apiFiles
+                .concat(routeFiles)
+                .map((item) => {
                 const apiModule = require(item.file);
                 const apiClass = apiModule && apiModule.default;
                 const methods = apiClass && utils_1.getMethods(apiClass);
-                return methods && methods.length && methods.map(method => {
-                    const func = apiClass[method] && apiClass[method];
-                    const name = item.name;
-                    try {
-                        if (typeof func === 'function') {
-                            funcs.push({
-                                func,
-                                name
-                            });
+                return (methods &&
+                    methods.length &&
+                    methods.map(method => {
+                        const func = apiClass[method] && apiClass[method];
+                        const name = item.name;
+                        try {
+                            if (typeof func === 'function') {
+                                funcs.push({
+                                    func,
+                                    name
+                                });
+                            }
                         }
-                    }
-                    catch (err) {
-                        throw new Error(`in loadRoutes: ${err}`);
-                    }
-                });
+                        catch (err) {
+                            throw new Error(`in loadRoutes: ${err}`);
+                        }
+                    }));
             });
         }
         catch (err) {
@@ -80,13 +84,13 @@ class Router {
     loadRoutes(app) {
         const fileReg = /\.js$/;
         const nameReg = /^.*\/(\w+)\.\w+$/;
-        const apiPath = Path.resolve(process.cwd(), this.options.apiPath);
+        const apiPath = Path.resolve(process.cwd(), this.options.apiPath || '');
         const files = utils_1.getFiles(apiPath, fileReg);
         const funcs = this.getRouterFiles();
         try {
             funcs.map(item => {
                 app.use((ctx, next) => __awaiter(this, void 0, void 0, function* () {
-                    return item && item.func && item.func.call(this, ctx, next, item.name);
+                    return (item && item.func && item.func.call(this, ctx, next, item.name));
                 }));
             });
         }

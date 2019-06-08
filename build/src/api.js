@@ -17,11 +17,11 @@ const utils_1 = require("./utils");
 exports.DefaultApiOptions = {
     path: '',
     method: 'get',
-    tocken: false,
+    token: false,
     test: false,
     cookies: {
         user: 'user',
-        tocken: 'tocken'
+        token: 'token'
     }
 };
 const log = Debug('api');
@@ -32,8 +32,10 @@ function Api(options, isRoute) {
         const cookieKeys = Object.assign({}, exports.DefaultApiOptions.cookies, options.cookies);
         const apiOptions = Object.assign({}, exports.DefaultApiOptions, options);
         apiOptions.permission = options.permission;
-        apiOptions.path = options.path ? utils_1.filtePath(options.path) : utils_1.getRouteName(propertyKey);
-        log(`load  ${Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`)} \t ${Chalk.default.gray(String(apiOptions.permission && apiOptions.permission.getValues() || ''))}`);
+        apiOptions.path = options.path
+            ? utils_1.filterPath(options.path)
+            : utils_1.getRouteName(propertyKey);
+        log(`load  ${Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`)} \t ${Chalk.default.gray(String((apiOptions.permission && apiOptions.permission.getValues()) || ''))}`);
         descriptor.value = (ctx, next, route) => __awaiter(this, void 0, void 0, function* () {
             yield next();
             const { path, method } = ctx.request;
@@ -42,11 +44,13 @@ function Api(options, isRoute) {
             }
             else {
                 const userName = ctx.cookies.get(cookieKeys.user);
-                const tocken = apiOptions.tocken ? ctx.cookies.get(cookieKeys.tocken) : '';
+                const token = apiOptions.token ? ctx.cookies.get(cookieKeys.token) : '';
                 const params = utils_1.getParams(apiOptions.path, path);
                 let result = _.cloneDeep(_1.DefaultResult);
                 let res = {};
-                if (!params.isValid && !(isRoute && (path === `/${route}` || (path === '/' && route === 'index')))) {
+                if (!params.isValid &&
+                    !(isRoute &&
+                        (path === `/${route}` || (path === '/' && route === 'index')))) {
                     return;
                 }
                 else if (!apiOptions.permission) {
@@ -71,15 +75,17 @@ function Api(options, isRoute) {
                 else if (!userName) {
                     result = utils_1.formantErrorMessage(_1.ErrorMessage.permission.invalid);
                 }
-                else if (apiOptions.tocken && !tocken) {
-                    result = utils_1.formantErrorMessage(_1.ErrorMessage.tocken.missing);
+                else if (apiOptions.token && !token) {
+                    result = utils_1.formantErrorMessage(_1.ErrorMessage.token.missing);
                 }
                 else {
                     const userPermission = yield apiOptions.permission.getUserPermissionByName(userName);
                     const isPermissionValid = permission_1.Permission.verify(userPermission, apiOptions.permission);
-                    const isTockenValid = apiOptions.tocken ? yield permission_1.Tocken.verify(new permission_1.Tocken(userName, tocken)) : true;
-                    if (!isTockenValid) {
-                        result = utils_1.formantErrorMessage(_1.ErrorMessage.tocken.invalid);
+                    const isTokenValid = apiOptions.token
+                        ? yield permission_1.Token.verify(new permission_1.Token(userName, token))
+                        : true;
+                    if (!isTokenValid) {
+                        result = utils_1.formantErrorMessage(_1.ErrorMessage.token.invalid);
                     }
                     else if (!isPermissionValid) {
                         result = utils_1.formantErrorMessage(_1.ErrorMessage.permission.invalid);
@@ -89,7 +95,7 @@ function Api(options, isRoute) {
                         ctx.params = params.data;
                         ctx.req.data = data;
                         res = yield originalMethod(ctx, next);
-                        log(`${Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`)} \t permission: ${isPermissionValid} \t tocken: ${isTockenValid}`);
+                        log(`${Chalk.default.cyan(`${apiOptions.method.toUpperCase()} ${apiOptions.path}`)} \t permission: ${isPermissionValid} \t token: ${isTokenValid}`);
                         if (isRoute) {
                             return ctx.render(route, res);
                         }

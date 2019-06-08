@@ -6,7 +6,9 @@ const validator_1 = require("validator");
 function getRouteName(methodName) {
     const reg = /[A-Z]?[a-z]+/g;
     const matches = typeof methodName === 'string' && methodName.match(reg);
-    return `/${matches && matches.reduce((prev, curr, index) => `${prev.toLowerCase()}/${curr.toLowerCase()}`) || ''}`;
+    return `/${(matches &&
+        matches.reduce((prev, curr, index) => `${prev.toLowerCase()}/${curr.toLowerCase()}`)) ||
+        ''}`;
 }
 exports.getRouteName = getRouteName;
 function generateMessage(code, value) {
@@ -45,7 +47,9 @@ function getMethods(target) {
     if (!target) {
         return [];
     }
-    return Object.getOwnPropertyNames(target).sort().filter((e, i, arr) => {
+    return Object.getOwnPropertyNames(target)
+        .sort()
+        .filter((e, i, arr) => {
         if (e !== arr[i + 1] && typeof target[e] === 'function') {
             return true;
         }
@@ -53,10 +57,15 @@ function getMethods(target) {
     });
 }
 exports.getMethods = getMethods;
-function filtePath(path) {
-    return !path ? '' : `/${path.split('/').filter(item => !!item).join('/')}`;
+function filterPath(path) {
+    return !path
+        ? ''
+        : `/${path
+            .split('/')
+            .filter(item => !!item)
+            .join('/')}`;
 }
-exports.filtePath = filtePath;
+exports.filterPath = filterPath;
 function getParams(path, url) {
     const paramReg = /\:\w+/g;
     const pathMatches = path.match(paramReg) || [];
@@ -65,13 +74,13 @@ function getParams(path, url) {
             isValid: false
         };
     }
-    else if (!pathMatches || !pathMatches.length && url === path) {
+    else if (!pathMatches || (!pathMatches.length && url === path)) {
         return {
             isValid: true
         };
     }
     pathMatches.map(item => {
-        path = path.replace(item, '(\\\w+)');
+        path = path.replace(item, '(\\w+)');
     });
     const urlMatches = new RegExp(path).exec(url) || [];
     const data = {};
@@ -89,7 +98,8 @@ function getParams(path, url) {
     });
     return {
         data,
-        isValid: urlMatches.length === pathMatches.length + 1 && pathMatches.length === Object.keys(data).length
+        isValid: urlMatches.length === pathMatches.length + 1 &&
+            pathMatches.length === Object.keys(data).length
     };
 }
 exports.getParams = getParams;

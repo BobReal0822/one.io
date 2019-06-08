@@ -14,7 +14,7 @@ export declare const ErrorMessage: {
         missing: ErrorMessageInfo;
         invalid: ErrorMessageInfo;
     };
-    tocken: {
+    token: {
         unknown: ErrorMessageInfo;
         missing: ErrorMessageInfo;
         invalid: ErrorMessageInfo;

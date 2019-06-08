@@ -1,4 +1,3 @@
-/// <reference types="koa" />
 import * as Koa from 'koa';
 export declare type ResponseMethods = 'get' | 'post' | 'put' | 'head' | 'delete';
 export interface ResponseInfo {
@@ -23,6 +22,6 @@ export declare class Router {
     private options;
     constructor(options?: RouterOptions);
     routes(app: Koa): any;
-    private getRouterFiles();
-    private loadRoutes(app);
+    private getRouterFiles;
+    private loadRoutes;
 }

@@ -4,21 +4,21 @@ export interface ApiOptions<Permission> {
     path?: string;
     method?: ResponseMethods;
     permission?: Permission;
-    tocken?: boolean;
+    token?: boolean;
     test?: boolean;
     cookies?: {
         user: string;
-        tocken: string;
+        token: string;
     };
 }
 export declare const DefaultApiOptions: {
     path: string;
     method: string;
-    tocken: boolean;
+    token: boolean;
     test: boolean;
     cookies: {
         user: string;
-        tocken: string;
+        token: string;
     };
 };
 export declare function Api<T extends Permission>(options: ApiOptions<T>, isRoute?: boolean): MethodDecorator;

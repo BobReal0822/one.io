@@ -20,7 +20,7 @@ function validator(options = {}) {
         descriptor.value = (ctx, next) => __awaiter(this, void 0, void 0, function* () {
             const result = _.cloneDeep(_1.DefaultResult);
             const { path } = ctx.request;
-            if (ctx.body && ctx.body.result && (ctx.body.result.success === false)) {
+            if (ctx.body && ctx.body.result && ctx.body.result.success === false) {
                 return;
             }
             const data = ctx.req.data || {};
@@ -49,11 +49,20 @@ function validator(options = {}) {
                     key
                 };
             });
-            result.code = validateResult[0] && validateResult[0].message && validateResult[0].message.code || result.code;
-            result.message = validateResult.map(item => item && item.isValid ? '' : `${item.key || ''}: ${item.message.value}`).filter(item => !!item).join('    ');
+            result.code =
+                (validateResult[0] &&
+                    validateResult[0].message &&
+                    validateResult[0].message.code) ||
+                    result.code;
+            result.message = validateResult
+                .map(item => item && item.isValid ? '' : `${item.key || ''}: ${item.message.value}`)
+                .filter(item => !!item)
+                .join('    ');
             result.success = !result.message;
             ctx.body = result;
-            log(`${result.success ? Chalk.default.cyan('valid') : Chalk.default.red('invalid')} \t ${Chalk.default.gray(result.message)}`);
+            log(`${result.success
+                ? Chalk.default.cyan('valid')
+                : Chalk.default.red('invalid')} \t ${Chalk.default.gray(result.message)}`);
             return result.success ? originalMethod(ctx) : result;
         });
     };

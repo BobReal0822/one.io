@@ -35,9 +35,9 @@ describe('Utils', () => {
             Utils.getFiles(Path.join(__dirname, './../../test'), /^[0-9a-zA-Z]+\.ts$/).length.should.equal(1);
         });
     });
-    describe('filtePath', () => {
+    describe('filterPath', () => {
         it('should return true', () => {
-            Utils.filtePath('/user/register/////').should.equal('/user/register');
+            Utils.filterPath('/user/register/////').should.equal('/user/register');
         });
     });
     describe('getParams', () => {
