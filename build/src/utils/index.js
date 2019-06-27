@@ -67,6 +67,7 @@ function filterPath(path) {
 }
 exports.filterPath = filterPath;
 function getParams(path, url) {
+    path = `/api${path}`;
     const paramReg = /\:\w+/g;
     const pathMatches = path.match(paramReg) || [];
     if (!url || !path) {
@@ -82,7 +83,7 @@ function getParams(path, url) {
     pathMatches.map(item => {
         path = path.replace(item, '(\\w+)');
     });
-    const urlMatches = new RegExp(path).exec(url) || [];
+    const urlMatches = new RegExp(`^${path}$`).exec(url) || [];
     const data = {};
     if (!urlMatches || !urlMatches.length) {
         return {

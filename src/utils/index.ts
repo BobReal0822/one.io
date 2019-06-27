@@ -89,6 +89,7 @@ export function filterPath(path: string): string {
 }
 
 export function getParams(path: string, url: string): GetParamsReturns {
+  path = `/api${path}`;
   const paramReg = /\:\w+/g;
   const pathMatches = path.match(paramReg) || [];
 
@@ -106,7 +107,7 @@ export function getParams(path: string, url: string): GetParamsReturns {
     path = path.replace(item, '(\\w+)');
   });
 
-  const urlMatches = new RegExp(path).exec(url) || [];
+  const urlMatches = new RegExp(`^${path}$`).exec(url) || [];
   const data: {
     [key: string]: string | number;
   } = {};
