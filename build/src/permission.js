@@ -71,6 +71,14 @@ class Token {
             resolve(value);
         }));
     }
+    static remove(name) {
+        return new Promise((resolve, reject) => Client.del(name, (err, value) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(value);
+        }));
+    }
 }
 exports.Token = Token;
 //# sourceMappingURL=permission.js.map
