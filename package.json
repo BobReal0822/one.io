@@ -1,6 +1,6 @@
 {
   "name": "one.io",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "A feature-rich routing middleware for koa",
   "main": "build/src/index.js",
   "typings": "build/src/index.d.ts",
