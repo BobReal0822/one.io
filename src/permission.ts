@@ -109,10 +109,6 @@ export class Token {
   }
 
   static remove(name: string) {
-    const result = Client.del(name);
-
-    Client.save();
-
-    return result;
+    return Client.del(name);
   }
 }
