@@ -109,14 +109,10 @@ export class Token {
   }
 
   static remove(name: string) {
-    return new Promise((resolve, reject) =>
-      Client.del(name, (err, value) => {
-        if (err) {
-          reject(err);
-        }
+    const result = Client.del(name);
 
-        resolve(value);
-      })
-    );
+    Client.save();
+
+    return result;
   }
 }
