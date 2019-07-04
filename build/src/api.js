@@ -73,7 +73,7 @@ function Api(options, isRoute) {
                         const res = {
                             success: false,
                             code: -1,
-                            message: err,
+                            message: (err && err.toString()) || '',
                             data: {}
                         };
                         ctx.body = res;
