@@ -130,7 +130,7 @@ export function Api<T extends Permission>(
             const res = {
               success: false,
               code: -1,
-              message: err,
+              message: (err && err.toString()) || '',
               data: {}
             };
 
