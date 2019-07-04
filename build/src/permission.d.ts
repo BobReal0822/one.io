@@ -18,5 +18,5 @@ export declare class Token {
     static verify(token: Token): Promise<boolean>;
     save(): string;
     static getTokenByName(name: string): Promise<string>;
-    static remove(name: string): Promise<{}>;
+    static remove(name: string): boolean;
 }

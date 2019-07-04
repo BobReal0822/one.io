@@ -69,7 +69,15 @@ function Api(options, isRoute) {
                         }
                     }
                     catch (err) {
-                        throw new Error(`Api error: ${err}`);
+                        console.error(`Api error: ${err}`);
+                        const res = {
+                            success: false,
+                            code: -1,
+                            message: err,
+                            data: {}
+                        };
+                        ctx.body = res;
+                        return res;
                     }
                 }
                 else if (!userName) {

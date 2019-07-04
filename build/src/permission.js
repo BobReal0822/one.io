@@ -72,12 +72,7 @@ class Token {
         }));
     }
     static remove(name) {
-        return new Promise((resolve, reject) => Client.del(name, (err, value) => {
-            if (err) {
-                reject(err);
-            }
-            resolve(value);
-        }));
+        return Client.del(name);
     }
 }
 exports.Token = Token;
