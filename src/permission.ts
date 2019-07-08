@@ -55,6 +55,7 @@ export interface TokenInfo {
  */
 export class Token {
   private token: TokenInfo;
+  private expire: number;
 
   constructor(name: string, token?: string) {
     if (!name) {
@@ -67,6 +68,10 @@ export class Token {
     };
 
     return this;
+  }
+
+  public setExpires(expire: number) {
+    this.expire = expire;
   }
 
   public getToken(): TokenInfo {
@@ -91,7 +96,11 @@ export class Token {
   public save(): string {
     const { name, value } = this.token;
 
-    Client.set(name, value);
+    if (this.expire) {
+      Client.set(name, value, 'EX', this.expire);
+    } else {
+      Client.set(name, value);
+    }
 
     return value;
   }

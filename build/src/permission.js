@@ -43,6 +43,9 @@ class Token {
         };
         return this;
     }
+    setExpires(expire) {
+        this.expire = expire;
+    }
     getToken() {
         return this.token;
     }
@@ -60,7 +63,12 @@ class Token {
     }
     save() {
         const { name, value } = this.token;
-        Client.set(name, value);
+        if (this.expire) {
+            Client.set(name, value, 'EX', this.expire);
+        }
+        else {
+            Client.set(name, value);
+        }
         return value;
     }
     static getTokenByName(name) {

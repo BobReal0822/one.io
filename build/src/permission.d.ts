@@ -12,7 +12,9 @@ export interface TokenInfo {
 }
 export declare class Token {
     private token;
+    private expire;
     constructor(name: string, token?: string);
+    setExpires(expire: number): void;
     getToken(): TokenInfo;
     static generateToken<Permission>(name: string): string;
     static verify(token: Token): Promise<boolean>;
