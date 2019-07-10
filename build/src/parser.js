@@ -15,7 +15,7 @@ const ContentTypes = {
     json: 'application/json',
     form: 'application/x-www-form-urlencoded',
     raw: 'text/plain',
-    formData: ' multipart/form-data'
+    formData: 'multipart/form-data'
 };
 function getQuery(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
