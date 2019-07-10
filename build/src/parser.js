@@ -51,7 +51,7 @@ function getBody(ctx) {
                             reject(err);
                         }
                         else {
-                            resolve(Object.assign({}, fields, files));
+                            resolve({ fields, files });
                         }
                     });
                 });
