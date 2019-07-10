@@ -52,10 +52,7 @@ export async function getBody(ctx: Context) {
           if (err) {
             reject(err);
           } else {
-            resolve({
-              ...fields,
-              ...files
-            });
+            resolve({ fields, files });
           }
         });
       });
