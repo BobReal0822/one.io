@@ -122,8 +122,8 @@ export function getParams(path: string, url: string): GetParamsReturns {
     const key = item.replace(':', '');
     const value = urlMatches[index + 1];
 
-    if (key && value && isNumeric(value)) {
-      data[key] = Number(value);
+    if (key && value) {
+      data[key] = value;
     }
   });
 
