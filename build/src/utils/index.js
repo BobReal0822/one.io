@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Fs = require("fs-extra");
 const Path = require("path");
-const validator_1 = require("validator");
 function getRouteName(methodName) {
     const reg = /[A-Z]?[a-z]+/g;
     const matches = typeof methodName === 'string' && methodName.match(reg);
@@ -93,8 +92,8 @@ function getParams(path, url) {
     pathMatches.map((item, index) => {
         const key = item.replace(':', '');
         const value = urlMatches[index + 1];
-        if (key && value && validator_1.isNumeric(value)) {
-            data[key] = Number(value);
+        if (key && value) {
+            data[key] = value;
         }
     });
     return {
