@@ -104,7 +104,7 @@ export function getParams(path: string, url: string): GetParamsReturns {
   }
 
   pathMatches.map(item => {
-    path = path.replace(item, '(\\w+)');
+    path = path.replace(item, '([A-Za-z0-9_-]+)');
   });
 
   const urlMatches = new RegExp(`^${path}$`).exec(url) || [];
